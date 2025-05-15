@@ -328,15 +328,19 @@
     <!-- Watermark -->
     <div class="watermark">Website by FAproduction</div>
 
-    <script>
-        // Konfigurasi
-        const MENU_SHEET_ID = "1YgOTXFSUwLzpfK1_YQekEN7N5G_45J2o711YX86-siQ";
-        const MENU_SHEET_NAME = 'Menu';
-        const API_KEY = "AIzaSyAz9kMUAWD-MfveClgQJnNV55kTKmrx-Yk";
-        const ADMIN_CREDENTIALS = {
-            username: "owner",
-            password: "tartoast"
-        };
+<script>
+    // Konfigurasi
+    const MENU_SHEET_ID = "1YgOTXFSUwLzpfK1_YQekEN7N5G_45J2o711YX86-siQ";
+    const TRANSACTION_SHEET_ID = "1xA-puMiuZ_sjwbqLdhgRqDk1VDyCHbLWkYnBB3786ww"; // Ganti dengan ID spreadsheet transaksi
+    const TRANSACTION_SHEET_NAME = 'Transaksi';
+    const API_KEY = "AIzaSyAz9kMUAWD-MfveClgQJnNV55kTKmrx-Yk";
+    const ADMIN_CREDENTIALS = {
+        username: "owner",
+        password: "tartoast"
+    };
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzssQW1FSse-pWoIif76OgJK0YUROf0jaur5UoY73PXySrZDJda1hXcwGIVv8U6_1SNgw/exec"; // Ganti dengan URL deploy Apps Script
+
+
 
         // Variabel global untuk state aplikasi
         let state = {
@@ -367,6 +371,87 @@
             localStorage.setItem('currentOrder', JSON.stringify(state.orderItems));
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Fungsi untuk simpan order ke Google Sheets
+    async function saveOrderToGoogleSheets(order) {
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'save_order',
+                    order_number: order.number,
+                    date: order.date,
+                    cashier: order.cashier,
+                    items: JSON.stringify(order.items),
+                    total: order.total
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Gagal menyimpan ke Google Sheets');
+            }
+            
+            const result = await response.json();
+            return result.success;
+        } catch (error) {
+            console.error('Error:', error);
+            return false;
+        }
+    }
+
+    // Fungsi untuk proses lengkap: simpan, cetak, hapus
+    async function completeOrderProcess() {
+        // 1. Simpan order
+        const order = saveOrder();
+        if (!order) return false;
+        
+        // 2. Simpan ke Google Sheets
+        const sheetSaved = await saveOrderToGoogleSheets(order);
+        if (!sheetSaved) {
+            alert('Data berhasil disimpan lokal tetapi gagal ke Google Sheets');
+        }
+        
+        // 3. Cetak struk
+        printReceipt(order);
+        
+        // 4. Hapus pesanan
+        clearOrder();
+        
+        // Simpan perubahan ke local Storage
+        localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
+        localStorage.removeItem('currentOrder');
+        
+        // Tampilkan notifikasi
+        alert(`Order #${order.number} telah disimpan dan dicetak!\nTotal: Rp ${order.total.toLocaleString('id-ID')}`);
+        
+        return true;
+    }
+
+
+
+
+
+
+
+    
         // Fungsi untuk memuat menu dari Google Sheets
         async function loadMenu() {
             showLoading(true);
