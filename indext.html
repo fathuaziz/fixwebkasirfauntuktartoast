@@ -136,6 +136,10 @@
             background-color: #ff5722;
             color: white;
         }
+        .btn-reprint {
+            background-color: #607d8b;
+            color: white;
+        }
         .loading {
             display: none;
             text-align: center;
@@ -166,6 +170,7 @@
         .order-history-item {
             padding: 8px;
             border-bottom: 1px solid #1eff00;
+            position: relative;
         }
         .order-history-item:last-child {
             border-bottom: none;
@@ -209,6 +214,18 @@
             color: rgba(0,0,0,0.2);
             font-size: 12px;
             z-index: 100;
+        }
+        .reprint-btn {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            background-color: #607d8b;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 3px 6px;
+            font-size: 12px;
+            cursor: pointer;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -265,14 +282,13 @@
             <button class="btn-reload" id="reload-btn">Reload Halaman</button>
             <div class="action-buttons">
                 <button class="btn-reset" id="reset-btn">Reset Hari Ini</button>
+                <button class="btn-reprint" id="reprint-btn">Cetak Ulang</button>
                 <button class="btn-print" id="print-btn">Simpan & Cetak Struk</button>
-
             </div>
-
         </div>
-
     </div>
-<h5 style="text-align: center;">Web kasir by FA production</h5>
+    <h5 style="text-align: center;">Web kasir by FA production</h5>
+
     <!-- Modal untuk Reset -->
     <div id="reset-modal" class="modal">
         <div class="modal-content">
@@ -294,6 +310,21 @@
         </div>
     </div>
 
+    <!-- Modal untuk Cetak Ulang -->
+    <div id="reprint-modal" class="modal">
+        <div class="modal-content">
+            <h2>Cetak Ulang Struk</h2>
+            <p>Pilih order yang akan dicetak ulang:</p>
+            <div id="reprint-options" style="max-height: 300px; overflow-y: auto;">
+                <!-- Opsi order akan diisi oleh JavaScript -->
+            </div>
+            <div class="modal-buttons">
+                <button id="cancel-reprint">Batal</button>
+                <button class="btn-reprint" id="confirm-reprint">Cetak</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Watermark -->
     <div class="watermark">Website by FAproduction</div>
 
@@ -312,8 +343,8 @@
             menuItems: [],
             orderItems: JSON.parse(localStorage.getItem('currentOrder')) || [],
             dailyOrders: JSON.parse(localStorage.getItem('dailyOrders')) || [],
-                orderCounter: parseInt(localStorage.getItem('orderCounter')) || 1 
-
+            orderCounter: parseInt(localStorage.getItem('orderCounter')) || 1,
+            selectedReprintOrder: null
         };
 
         // Fungsi yang selalu dijalankan sebelum reload
@@ -436,8 +467,8 @@
             state.dailyOrders.push(order);
             localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
             
-       state.orderCounter++;
-    localStorage.setItem('orderCounter', state.orderCounter.toString());
+            state.orderCounter++;
+            localStorage.setItem('orderCounter', state.orderCounter.toString());
             
             return order;
         }
@@ -451,8 +482,8 @@
 
         // Fungsi untuk cetak struk
         function printReceipt(order) {
-            const cashierName = document.getElementById('cashier-name').value.trim() || '-';
-            const now = new Date();
+            const cashierName = order.cashier || document.getElementById('cashier-name').value.trim() || '-';
+            const now = new Date(order.date) || new Date();
             const total = order.total;
             
             let receiptContent = `
@@ -469,10 +500,12 @@
                         .item { display: flex; justify-content: space-between; }
                         .total { font-weight: bold; border-top: 1px dashed #000; padding-top: 5px; }
                         .footer { text-align: center; margin-top: 10px; font-size: 12px; }
+                        .reprint-notice { font-size: 10px; color: #666; text-align: center; margin-bottom: 5px; }
                     </style>
                 </head>
                 <body>
                     <div class="receipt">
+                        ${order.isReprint ? '<div class="reprint-notice">** CETAK ULANG **</div>' : ''}
                         <div class="header">
                             <div class="title">TARTOAST</div>
                             <div>${now.toLocaleString('id-ID')}</div>
@@ -534,6 +567,7 @@
                 state.dailyOrders = [];
                 state.orderCounter = 1;
                 localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
+                localStorage.setItem('orderCounter', '1');
                 document.getElementById('reset-modal').style.display = 'none';
                 alert('Data harian telah direset');
                 location.reload();
@@ -631,9 +665,10 @@
             
             let historyHtml = '';
             
-            state.dailyOrders.forEach(order => {
+            state.dailyOrders.forEach((order, index) => {
                 historyHtml += `
                     <div class="order-history-item">
+                        <button class="reprint-btn" data-index="${index}">Cetak Ulang</button>
                         <strong>Order #${order.number}</strong> (${order.date})<br>
                         Kasir: ${order.cashier}<br>
                         ${order.items.map(item => `${item.name} x${item.quantity}`).join(', ')}<br>
@@ -659,6 +694,86 @@
             `;
             
             orderHistory.innerHTML = historyHtml;
+            
+            // Tambahkan event listener untuk tombol cetak ulang
+            document.querySelectorAll('.reprint-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const orderIndex = parseInt(e.target.getAttribute('data-index'));
+                    const orderToReprint = state.dailyOrders[orderIndex];
+                    if (orderToReprint) {
+                        orderToReprint.isReprint = true;
+                        printReceipt(orderToReprint);
+                    }
+                });
+            });
+        }
+
+        // Fungsi untuk menampilkan modal cetak ulang
+        function showReprintModal() {
+            if (state.dailyOrders.length === 0) {
+                alert('Tidak ada order yang bisa dicetak ulang');
+                return;
+            }
+            
+            const modal = document.getElementById('reprint-modal');
+            const optionsContainer = document.getElementById('reprint-options');
+            
+            // Kosongkan container options
+            optionsContainer.innerHTML = '';
+            
+            // Tambahkan radio button untuk setiap order
+            state.dailyOrders.forEach((order, index) => {
+                const div = document.createElement('div');
+                div.style.marginBottom = '10px';
+                div.style.padding = '5px';
+                div.style.borderBottom = '1px solid #eee';
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'reprint-order';
+                radio.value = index;
+                radio.id = `order-${index}`;
+                radio.style.marginRight = '10px';
+                
+                // Pilih radio pertama secara default
+                if (index === 0) {
+                    radio.checked = true;
+                    state.selectedReprintOrder = index;
+                }
+                
+                radio.addEventListener('change', () => {
+                    state.selectedReprintOrder = parseInt(radio.value);
+                });
+                
+                const label = document.createElement('label');
+                label.htmlFor = `order-${index}`;
+                label.innerHTML = `
+                    <strong>Order #${order.number}</strong> (${order.date}) - 
+                    Kasir: ${order.cashier}<br>
+                    Total: Rp ${order.total.toLocaleString('id-ID')}
+                `;
+                
+                div.appendChild(radio);
+                div.appendChild(label);
+                optionsContainer.appendChild(div);
+            });
+            
+            modal.style.display = 'flex';
+        }
+
+        // Fungsi untuk konfirmasi cetak ulang
+        function confirmReprint() {
+            if (state.selectedReprintOrder === null) {
+                alert('Silakan pilih order yang akan dicetak ulang');
+                return;
+            }
+            
+            const orderToReprint = state.dailyOrders[state.selectedReprintOrder];
+            if (orderToReprint) {
+                orderToReprint.isReprint = true;
+                printReceipt(orderToReprint);
+                document.getElementById('reprint-modal').style.display = 'none';
+            }
         }
 
         // Fungsi untuk proses lengkap: simpan, cetak, hapus
@@ -685,21 +800,28 @@
 
         // Inisialisasi saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
-            //otomatis reload
+            // Event listeners
             document.getElementById('add-btn').addEventListener('click', executeAndReload(addToOrder));
             document.getElementById('reload-btn').addEventListener('click', () => location.reload());
             document.getElementById('print-btn').addEventListener('click', executeAndReload(completeOrderProcess));
             document.getElementById('reset-btn').addEventListener('click', resetDailyOrders);
+            document.getElementById('reprint-btn').addEventListener('click', showReprintModal);
+            
+            // Modal reset
             document.getElementById('cancel-reset').addEventListener('click', () => {
                 document.getElementById('reset-modal').style.display = 'none';
             });
             document.getElementById('confirm-reset').addEventListener('click', confirmReset);
             
+            // Modal cetak ulang
+            document.getElementById('cancel-reprint').addEventListener('click', () => {
+                document.getElementById('reprint-modal').style.display = 'none';
+            });
+            document.getElementById('confirm-reprint').addEventListener('click', confirmReprint);
+            
             // Muat menu awal
             loadMenu();
         });
-
     </script>
-
 </body>
 </html>
