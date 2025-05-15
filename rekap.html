@@ -12,7 +12,7 @@
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             background-color: white;
             padding: 20px;
@@ -24,16 +24,71 @@
             color: #333;
             margin-bottom: 20px;
         }
-        .section {
+        .header-info {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .last-updated {
+            color: #666;
+            font-style: italic;
+        }
+        .refresh-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: #fff;
+            border-radius: 8px;
             padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+        }
+        .stat-card h3 {
+            margin-top: 0;
+            color: #555;
+            font-size: 16px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
         }
         .loading {
-            display: none;
             text-align: center;
-            margin: 20px 0;
+            padding: 20px;
         }
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
@@ -44,70 +99,12 @@
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
-        .filters {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-        .filter-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .filter-group input, .filter-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .summary-cards {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .summary-card {
-            flex: 1;
-            min-width: 200px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .summary-card h3 {
-            margin-top: 0;
-            color: #555;
-        }
-        .summary-card .value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
+        .menu-summary {
+            margin-top: 30px;
         }
         .chart-container {
-            height: 400px;
-            margin-top: 30px;
+            margin-top: 20px;
+            height: 300px;
         }
         .watermark {
             position: fixed;
@@ -115,30 +112,6 @@
             right: 10px;
             color: rgba(0,0,0,0.2);
             font-size: 12px;
-        }
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-reload {
-            background-color: #2196f3;
-            color: white;
-        }
-        .btn-export {
-            background-color: #4caf50;
-            color: white;
-        }
-        .btn-print {
-            background-color: #9c27b0;
-            color: white;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -150,91 +123,82 @@
 </head>
 <body>
     <div class="container">
-        <h1>Rekap Penjualan TarToast</h1>
+        <h1>Rekap Penjualan Harian TarToast</h1>
         
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Memuat data penjualan...</p>
+        <div class="header-info">
+            <div class="last-updated" id="last-updated">
+                Memuat data...
+            </div>
+            <button class="refresh-btn" id="refresh-btn">
+                &#x21bb; Segarkan Data
+            </button>
         </div>
         
-        <div class="buttons">
-            <button class="btn-reload" id="reload-btn">Muat Ulang Data</button>
-            <button class="btn-export" id="export-btn">Ekspor ke Excel</button>
-            <button class="btn-print" id="print-btn">Cetak Laporan</button>
-        </div>
-        
-        <div class="filters">
-            <div class="filter-group">
-                <label for="date-range">Rentang Tanggal:</label>
-                <select id="date-range">
-                    <option value="today">Hari Ini</option>
-                    <option value="yesterday">Kemarin</option>
-                    <option value="week">Minggu Ini</option>
-                    <option value="month">Bulan Ini</option>
-                    <option value="all">Semua Data</option>
-                    <option value="custom">Custom</option>
-                </select>
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Total Transaksi Hari Ini</h3>
+                <div class="stat-value" id="total-transactions">0</div>
             </div>
-            <div class="filter-group" id="custom-date-group" style="display: none;">
-                <label for="custom-date">Tanggal Custom:</label>
-                <input type="date" id="custom-date">
-            </div>
-            <div class="filter-group">
-                <label for="cashier-filter">Filter Kasir:</label>
-                <select id="cashier-filter">
-                    <option value="all">Semua Kasir</option>
-                    <option value="Fathu">Fathu</option>
-                    <option value="Aziz">Aziz</option>
-                    <option value="Staf1">Staf1</option>
-                    <option value="Staf2">Staf2</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="summary-cards">
-            <div class="summary-card">
-                <h3>Total Transaksi</h3>
-                <div class="value" id="total-transactions">0</div>
-            </div>
-            <div class="summary-card">
+            <div class="stat-card">
                 <h3>Total Pendapatan</h3>
-                <div class="value" id="total-revenue">Rp 0</div>
+                <div class="stat-value" id="total-revenue">Rp 0</div>
             </div>
-            <div class="summary-card">
+            <div class="stat-card">
                 <h3>Rata-rata per Transaksi</h3>
-                <div class="value" id="average-order">Rp 0</div>
+                <div class="stat-value" id="avg-transaction">Rp 0</div>
             </div>
-            <div class="summary-card">
+            <div class="stat-card">
                 <h3>Menu Terlaris</h3>
-                <div class="value" id="best-seller">-</div>
+                <div class="stat-value" id="best-seller">-</div>
             </div>
         </div>
         
-        <div class="section">
-            <h2>Grafik Penjualan</h2>
-            <div class="chart-container">
-                <canvas id="sales-chart"></canvas>
-            </div>
+        <h2>Daftar Transaksi Hari Ini</h2>
+        <div id="loading-transactions" class="loading">
+            <div class="spinner"></div>
+            <p>Memuat data transaksi...</p>
         </div>
-        
-        <div class="section">
-            <h2>Detail Transaksi</h2>
+        <div id="transactions-container" style="display: none;">
             <table id="transactions-table">
                 <thead>
                     <tr>
                         <th>No. Order</th>
-                        <th>Tanggal</th>
+                        <th>Waktu</th>
                         <th>Kasir</th>
-                        <th>Item</th>
+                        <th>Jumlah Item</th>
                         <th>Total</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="5" style="text-align: center;">Memuat data...</td>
-                    </tr>
+                <tbody id="transactions-body">
+                    <!-- Data transaksi akan diisi oleh JavaScript -->
                 </tbody>
             </table>
+        </div>
+        
+        <div class="menu-summary">
+            <h2>Rekap Penjualan Menu</h2>
+            <div id="loading-menu" class="loading">
+                <div class="spinner"></div>
+                <p>Memuat data menu...</p>
+            </div>
+            <div id="menu-container" style="display: none;">
+                <div class="chart-container">
+                    <canvas id="menuChart"></canvas>
+                </div>
+                <table id="menu-table">
+                    <thead>
+                        <tr>
+                            <th>Menu</th>
+                            <th>Terjual</th>
+                            <th>Total Pendapatan</th>
+                            <th>Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menu-body">
+                        <!-- Data menu akan diisi oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
@@ -244,314 +208,272 @@
         // Konfigurasi
         const SALES_SHEET_ID = "1YgOTXFSUwLzpfK1_YQekEN7N5G_45J2o711YX86-siQ";
         const SALES_SHEET_NAME = 'Penjualan';
+        const MENU_SHEET_NAME = 'Menu';
         const API_KEY = "AIzaSyAz9kMUAWD-MfveClgQJnNV55kTKmrx-Yk";
+        const REFRESH_INTERVAL = 30000; // 30 detik
         
-        // Variabel global untuk state aplikasi
-        let state = {
-            allOrders: [],
-            filteredOrders: [],
-            salesChart: null
-        };
-
+        // Variabel global
+        let menuChart = null;
+        let refreshInterval = null;
+        
+        // Fungsi untuk memformat angka ke Rupiah
+        function formatRupiah(amount) {
+            return 'Rp ' + amount.toLocaleString('id-ID');
+        }
+        
+        // Fungsi untuk memformat tanggal
+        function formatDate(dateString) {
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            return new Date(dateString).toLocaleDateString('id-ID', options);
+        }
+        
         // Fungsi untuk memuat data dari Google Sheets
-        async function loadSalesData() {
-            showLoading(true);
+        async function loadData() {
             try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SALES_SHEET_ID}/values/${SALES_SHEET_NAME}?key=${API_KEY}`;
-                const response = await fetch(url);
+                // Tampilkan loading
+                document.getElementById('loading-transactions').style.display = 'block';
+                document.getElementById('transactions-container').style.display = 'none';
+                document.getElementById('loading-menu').style.display = 'block';
+                document.getElementById('menu-container').style.display = 'none';
                 
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                // URL untuk mengambil data penjualan
+                const salesUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SALES_SHEET_ID}/values/${SALES_SHEET_NAME}?key=${API_KEY}`;
                 
-                const data = await response.json();
+                // URL untuk mengambil data menu
+                const menuUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SALES_SHEET_ID}/values/${MENU_SHEET_NAME}?key=${API_KEY}`;
                 
-                if (data.values && data.values.length > 1) {
-                    // Simpan semua data ke state
-                    state.allOrders = parseSalesData(data.values);
-                    
-                    // Filter data default (hari ini)
-                    filterData();
-                    
-                    // Render tampilan
-                    renderSummary();
-                    renderTransactionsTable();
-                    renderSalesChart();
-                } else {
-                    throw new Error('Data penjualan kosong');
+                // Ambil data penjualan dan menu secara bersamaan
+                const [salesResponse, menuResponse] = await Promise.all([
+                    fetch(salesUrl),
+                    fetch(menuUrl)
+                ]);
+                
+                if (!salesResponse.ok || !menuResponse.ok) {
+                    throw new Error('Gagal mengambil data dari server');
                 }
+                
+                const salesData = await salesResponse.json();
+                const menuData = await menuResponse.json();
+                
+                // Proses data penjualan
+                processSalesData(salesData.values);
+                
+                // Proses data menu
+                processMenuData(menuData.values, salesData.values);
+                
+                // Update waktu terakhir pembaruan
+                document.getElementById('last-updated').textContent = `Terakhir diperbarui: ${formatDate(new Date())}`;
+                
             } catch (error) {
                 console.error('Error:', error);
-                // Fallback data dummy jika gagal mengambil dari server
-                state.allOrders = generateDummyData();
-                filterData();
-                renderSummary();
-                renderTransactionsTable();
-                renderSalesChart();
-                alert('Menggunakan data lokal karena gagal mengambil dari server');
+                alert('Gagal memuat data. Silakan coba lagi atau periksa koneksi internet Anda.');
+                
+                // Fallback: Coba ambil dari localStorage jika ada
+                const cachedData = localStorage.getItem('cachedSalesData');
+                if (cachedData) {
+                    const parsedData = JSON.parse(cachedData);
+                    processSalesData(parsedData.sales);
+                    processMenuData(parsedData.menu, parsedData.sales);
+                    document.getElementById('last-updated').textContent = `Data offline (terakhir diperbarui: ${formatDate(new Date(parsedData.timestamp))})`;
+                }
             } finally {
-                showLoading(false);
+                // Sembunyikan loading
+                document.getElementById('loading-transactions').style.display = 'none';
+                document.getElementById('transactions-container').style.display = 'block';
+                document.getElementById('loading-menu').style.display = 'none';
+                document.getElementById('menu-container').style.display = 'block';
             }
         }
-
-        // Fungsi untuk parsing data dari Google Sheets
-        function parseSalesData(sheetData) {
-            const headers = sheetData[0];
-            const rows = sheetData.slice(1);
-            
-            return rows.map(row => {
-                const order = {};
-                headers.forEach((header, index) => {
-                    order[header] = row[index];
-                });
-                
-                // Konversi data yang diperlukan
-                if (order.items) {
-                    try {
-                        order.items = JSON.parse(order.items);
-                    } catch (e) {
-                        order.items = [];
-                    }
-                }
-                
-                if (order.total) {
-                    order.total = parseInt(order.total) || 0;
-                }
-                
-                if (order.date) {
-                    order.date = new Date(order.date);
-                } else {
-                    order.date = new Date();
-                }
-                
-                return order;
-            });
-        }
-
-        // Fungsi untuk generate data dummy (fallback)
-        function generateDummyData() {
-            const dummyOrders = [];
-            const menuItems = [
-                { name: "Nasi Goreng", price: 25000 },
-                { name: "Mie Goreng", price: 20000 },
-                { name: "Es Teh", price: 5000 },
-                { name: "Es Jeruk", price: 7000 }
-            ];
-            const cashiers = ["Fathu", "Aziz", "Staf1", "Staf2"];
-            
-            // Data untuk 7 hari terakhir
-            for (let i = 0; i < 7; i++) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                
-                // 3-10 order per hari
-                const ordersPerDay = 3 + Math.floor(Math.random() * 8);
-                
-                for (let j = 0; j < ordersPerDay; j++) {
-                    const itemsCount = 1 + Math.floor(Math.random() * 4);
-                    const items = [];
-                    let total = 0;
-                    
-                    for (let k = 0; k < itemsCount; k++) {
-                        const menuItem = menuItems[Math.floor(Math.random() * menuItems.length)];
-                        const quantity = 1 + Math.floor(Math.random() * 3);
-                        
-                        items.push({
-                            name: menuItem.name,
-                            price: menuItem.price,
-                            quantity: quantity
-                        });
-                        
-                        total += menuItem.price * quantity;
-                    }
-                    
-                    dummyOrders.push({
-                        number: `ORD-${date.getDate()}${date.getMonth()+1}${date.getFullYear()}-${j+1}`,
-                        date: new Date(date),
-                        cashier: cashiers[Math.floor(Math.random() * cashiers.length)],
-                        items: items,
-                        total: total
-                    });
-                }
-            }
-            
-            return dummyOrders;
-        }
-
-        // Fungsi untuk filter data berdasarkan kriteria
-        function filterData() {
-            const dateRange = document.getElementById('date-range').value;
-            const cashierFilter = document.getElementById('cashier-filter').value;
-            let filtered = [...state.allOrders];
-            
-            // Filter berdasarkan tanggal
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
-            switch (dateRange) {
-                case 'today':
-                    filtered = filtered.filter(order => 
-                        order.date >= today
-                    );
-                    break;
-                case 'yesterday':
-                    const yesterday = new Date(today);
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    filtered = filtered.filter(order => 
-                        order.date >= yesterday && order.date < today
-                    );
-                    break;
-                case 'week':
-                    const weekAgo = new Date(today);
-                    weekAgo.setDate(weekAgo.getDate() - 7);
-                    filtered = filtered.filter(order => 
-                        order.date >= weekAgo
-                    );
-                    break;
-                case 'month':
-                    const monthAgo = new Date(today);
-                    monthAgo.setMonth(monthAgo.getMonth() - 1);
-                    filtered = filtered.filter(order => 
-                        order.date >= monthAgo
-                    );
-                    break;
-                case 'custom':
-                    const customDate = new Date(document.getElementById('custom-date').value);
-                    if (!isNaN(customDate.getTime())) {
-                        const nextDay = new Date(customDate);
-                        nextDay.setDate(nextDay.getDate() + 1);
-                        filtered = filtered.filter(order => 
-                            order.date >= customDate && order.date < nextDay
-                        );
-                    }
-                    break;
-                // 'all' tidak melakukan filter tanggal
-            }
-            
-            // Filter berdasarkan kasir
-            if (cashierFilter !== 'all') {
-                filtered = filtered.filter(order => 
-                    order.cashier === cashierFilter
-                );
-            }
-            
-            // Simpan hasil filter
-            state.filteredOrders = filtered.sort((a, b) => b.date - a.date);
-        }
-
-        // Fungsi untuk render summary cards
-        function renderSummary() {
-            const totalTransactions = state.filteredOrders.length;
-            const totalRevenue = state.filteredOrders.reduce((sum, order) => sum + order.total, 0);
-            const averageOrder = totalTransactions > 0 ? Math.round(totalRevenue / totalTransactions) : 0;
-            
-            // Hitung menu terlaris
-            const menuCounts = {};
-            state.filteredOrders.forEach(order => {
-                order.items.forEach(item => {
-                    if (!menuCounts[item.name]) {
-                        menuCounts[item.name] = 0;
-                    }
-                    menuCounts[item.name] += item.quantity;
-                });
-            });
-            
-            let bestSeller = '-';
-            let maxCount = 0;
-            for (const [menu, count] of Object.entries(menuCounts)) {
-                if (count > maxCount) {
-                    maxCount = count;
-                    bestSeller = menu;
-                }
-            }
-            
-            // Update DOM
-            document.getElementById('total-transactions').textContent = totalTransactions;
-            document.getElementById('total-revenue').textContent = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
-            document.getElementById('average-order').textContent = `Rp ${averageOrder.toLocaleString('id-ID')}`;
-            document.getElementById('best-seller').textContent = bestSeller;
-        }
-
-        // Fungsi untuk render tabel transaksi
-        function renderTransactionsTable() {
-            const tableBody = document.querySelector('#transactions-table tbody');
-            
-            if (state.filteredOrders.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center;">Tidak ada data transaksi</td>
-                    </tr>
-                `;
+        
+        // Fungsi untuk memproses data penjualan
+        function processSalesData(salesData) {
+            if (!salesData || salesData.length <= 1) {
+                document.getElementById('transactions-body').innerHTML = '<tr><td colspan="5" style="text-align: center;">Belum ada transaksi hari ini</td></tr>';
+                updateSummaryStats([], []);
                 return;
             }
             
-            let html = '';
-            state.filteredOrders.forEach(order => {
-                const dateStr = order.date.toLocaleString('id-ID');
-                const itemsStr = order.items.map(item => 
-                    `${item.name} (${item.quantity}x)`
-                ).join(', ');
+            // Simpan data ke localStorage untuk cache
+            const cachedData = {
+                sales: salesData,
+                timestamp: new Date().getTime()
+            };
+            localStorage.setItem('cachedSalesData', JSON.stringify(cachedData));
+            
+            // Header kolom ada di baris pertama
+            const headers = salesData[0];
+            const transactions = salesData.slice(1);
+            
+            // Urutkan berdasarkan waktu (asumsi kolom 1 adalah waktu)
+            transactions.sort((a, b) => new Date(b[1]) - new Date(a[1]));
+            
+            // Render tabel transaksi
+            const transactionsBody = document.getElementById('transactions-body');
+            transactionsBody.innerHTML = '';
+            
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
                 
-                html += `
-                    <tr>
-                        <td>${order.number}</td>
-                        <td>${dateStr}</td>
-                        <td>${order.cashier}</td>
-                        <td>${itemsStr}</td>
-                        <td>Rp ${order.total.toLocaleString('id-ID')}</td>
-                    </tr>
+                // Asumsi struktur kolom: [No. Order, Waktu, Kasir, Items, Total]
+                row.innerHTML = `
+                    <td>${transaction[0] || '-'}</td>
+                    <td>${transaction[1] ? formatDate(transaction[1]) : '-'}</td>
+                    <td>${transaction[2] || '-'}</td>
+                    <td>${transaction[3] || '0'}</td>
+                    <td>${transaction[4] ? formatRupiah(parseInt(transaction[4])) : 'Rp 0'}</td>
                 `;
+                
+                transactionsBody.appendChild(row);
             });
             
-            tableBody.innerHTML = html;
+            // Update statistik ringkasan
+            updateSummaryStats(transactions, []);
         }
-
-        // Fungsi untuk render chart penjualan
-        function renderSalesChart() {
-            const ctx = document.getElementById('sales-chart').getContext('2d');
-            
-            // Hancurkan chart sebelumnya jika ada
-            if (state.salesChart) {
-                state.salesChart.destroy();
+        
+        // Fungsi untuk memproses data menu dan penjualan
+        function processMenuData(menuData, salesData) {
+            if (!menuData || menuData.length <= 1) {
+                document.getElementById('menu-body').innerHTML = '<tr><td colspan="4" style="text-align: center;">Data menu tidak tersedia</td></tr>';
+                return;
             }
             
-            // Siapkan data untuk chart
-            const dates = {};
-            state.filteredOrders.forEach(order => {
-                const dateKey = order.date.toLocaleDateString('id-ID');
-                if (!dates[dateKey]) {
-                    dates[dateKey] = {
-                        total: 0,
-                        count: 0
+            // Simpan data menu ke cache
+            const cachedData = JSON.parse(localStorage.getItem('cachedSalesData') || '{}');
+            cachedData.menu = menuData;
+            localStorage.setItem('cachedSalesData', JSON.stringify(cachedData));
+            
+            // Proses data menu
+            const menuHeaders = menuData[0];
+            const menuItems = menuData.slice(1);
+            
+            // Hitung penjualan per menu (jika data penjualan tersedia)
+            const menuSales = calculateMenuSales(menuItems, salesData);
+            
+            // Render tabel menu
+            renderMenuTable(menuSales);
+            
+            // Render chart
+            renderMenuChart(menuSales);
+        }
+        
+        // Fungsi untuk menghitung penjualan per menu
+        function calculateMenuSales(menuItems, salesData) {
+            // Jika tidak ada data penjualan, kembalikan menu dengan penjualan 0
+            if (!salesData || salesData.length <= 1) {
+                return menuItems.map(item => ({
+                    name: item[0] || 'Menu tanpa nama',
+                    sold: 0,
+                    revenue: 0,
+                    percentage: 0
+                }));
+            }
+            
+            // Buat objek untuk menyimpan total penjualan per menu
+            const menuSalesMap = {};
+            
+            // Inisialisasi semua menu dengan 0
+            menuItems.forEach(item => {
+                const menuName = item[0];
+                if (menuName) {
+                    menuSalesMap[menuName] = {
+                        sold: 0,
+                        revenue: 0,
+                        price: parseInt(item[1]) || 0
                     };
                 }
-                dates[dateKey].total += order.total;
-                dates[dateKey].count++;
             });
             
-            const sortedDates = Object.keys(dates).sort((a, b) => {
-                return new Date(a) - new Date(b);
+            // Proses setiap transaksi (lewati header)
+            salesData.slice(1).forEach(transaction => {
+                // Asumsi kolom items berisi string seperti "Nasi Goreng x2, Es Teh x1"
+                const itemsStr = transaction[3] || '';
+                const items = itemsStr.split(',').map(item => item.trim());
+                
+                items.forEach(item => {
+                    const [name, quantityStr] = item.split('x').map(part => part.trim());
+                    const quantity = parseInt(quantityStr) || 0;
+                    
+                    if (name && menuSalesMap[name]) {
+                        menuSalesMap[name].sold += quantity;
+                        menuSalesMap[name].revenue += quantity * menuSalesMap[name].price;
+                    }
+                });
             });
             
-            const revenueData = sortedDates.map(date => dates[date].total);
-            const transactionData = sortedDates.map(date => dates[date].count);
+            // Hitung total penjualan untuk persentase
+            const totalRevenue = Object.values(menuSalesMap).reduce((sum, item) => sum + item.revenue, 0);
+            
+            // Konversi ke array dan hitung persentase
+            return Object.entries(menuSalesMap).map(([name, data]) => ({
+                name,
+                sold: data.sold,
+                revenue: data.revenue,
+                percentage: totalRevenue > 0 ? (data.revenue / totalRevenue * 100) : 0
+            })).sort((a, b) => b.revenue - a.revenue); // Urutkan berdasarkan revenue tertinggi
+        }
+        
+        // Fungsi untuk render tabel menu
+        function renderMenuTable(menuSales) {
+            const menuBody = document.getElementById('menu-body');
+            menuBody.innerHTML = '';
+            
+            if (menuSales.length === 0) {
+                menuBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Tidak ada data penjualan menu</td></tr>';
+                return;
+            }
+            
+            menuSales.forEach(menu => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${menu.name}</td>
+                    <td>${menu.sold}</td>
+                    <td>${formatRupiah(menu.revenue)}</td>
+                    <td>${menu.percentage.toFixed(1)}%</td>
+                `;
+                menuBody.appendChild(row);
+            });
+        }
+        
+        // Fungsi untuk render chart menu
+        function renderMenuChart(menuSales) {
+            const ctx = document.getElementById('menuChart').getContext('2d');
+            
+            // Siapkan data untuk chart
+            const labels = menuSales.map(menu => menu.name);
+            const revenueData = menuSales.map(menu => menu.revenue);
+            const soldData = menuSales.map(menu => menu.sold);
+            
+            // Hancurkan chart sebelumnya jika ada
+            if (menuChart) {
+                menuChart.destroy();
+            }
             
             // Buat chart baru
-            state.salesChart = new Chart(ctx, {
+            menuChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: sortedDates,
+                    labels: labels,
                     datasets: [
                         {
                             label: 'Pendapatan (Rp)',
                             data: revenueData,
-                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1,
                             yAxisID: 'y'
                         },
                         {
-                            label: 'Jumlah Transaksi',
-                            data: transactionData,
-                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            label: 'Jumlah Terjual',
+                            data: soldData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.7)',
                             borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 1,
                             type: 'line',
@@ -578,7 +500,7 @@
                             position: 'right',
                             title: {
                                 display: true,
-                                text: 'Jumlah Transaksi'
+                                text: 'Jumlah Terjual'
                             },
                             grid: {
                                 drawOnChartArea: false
@@ -588,174 +510,52 @@
                 }
             });
         }
-
-        // Fungsi untuk ekspor data ke Excel
-        function exportToExcel() {
-            // Format data untuk ekspor
-            const exportData = state.filteredOrders.map(order => {
-                return {
-                    'No. Order': order.number,
-                    'Tanggal': order.date.toLocaleString('id-ID'),
-                    'Kasir': order.cashier,
-                    'Item': order.items.map(item => 
-                        `${item.name} x${item.quantity} @Rp${item.price.toLocaleString('id-ID')}`
-                    ).join(', '),
-                    'Total': order.total
-                };
-            });
+        
+        // Fungsi untuk memperbarui statistik ringkasan
+        function updateSummaryStats(transactions, menuSales) {
+            // Hitung total transaksi
+            const totalTransactions = transactions.length;
+            document.getElementById('total-transactions').textContent = totalTransactions;
             
-            // Buat CSV
-            let csv = 'No. Order,Tanggal,Kasir,Item,Total\n';
-            exportData.forEach(row => {
-                csv += `"${row['No. Order']}","${row['Tanggal']}","${row['Kasir']}","${row['Item']}",${row['Total']}\n`;
-            });
+            // Hitung total pendapatan (asumsi kolom 4 adalah total)
+            const totalRevenue = transactions.reduce((sum, t) => sum + (parseInt(t[4]) || 0), 0);
+            document.getElementById('total-revenue').textContent = formatRupiah(totalRevenue);
             
-            // Buat blob dan download
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', `rekap_penjualan_${new Date().toISOString().slice(0,10)}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Fungsi untuk cetak laporan
-        function printReport() {
-            const printWindow = window.open('', '_blank');
-            const now = new Date();
+            // Hitung rata-rata per transaksi
+            const avgTransaction = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+            document.getElementById('avg-transaction').textContent = formatRupiah(avgTransaction);
             
-            let html = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Laporan Penjualan TarToast</title>
-                    <style>
-                        body { font-family: Arial; margin: 0; padding: 20px; }
-                        h1 { text-align: center; }
-                        .print-header { margin-bottom: 20px; }
-                        .print-summary { display: flex; justify-content: space-between; margin-bottom: 20px; }
-                        .summary-card { padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 23%; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
-                        th { background-color: #f2f2f2; }
-                        .print-footer { margin-top: 30px; text-align: right; font-style: italic; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Laporan Penjualan TarToast</h1>
-                    <div class="print-header">
-                        <p>Tanggal Cetak: ${now.toLocaleString('id-ID')}</p>
-                        <p>Rentang Laporan: ${document.getElementById('date-range').options[document.getElementById('date-range').selectedIndex].text}</p>
-                        <p>Kasir: ${document.getElementById('cashier-filter').value === 'all' ? 'Semua Kasir' : document.getElementById('cashier-filter').value}</p>
-                    </div>
-                    
-                    <div class="print-summary">
-                        <div class="summary-card">
-                            <h3>Total Transaksi</h3>
-                            <p>${document.getElementById('total-transactions').textContent}</p>
-                        </div>
-                        <div class="summary-card">
-                            <h3>Total Pendapatan</h3>
-                            <p>${document.getElementById('total-revenue').textContent}</p>
-                        </div>
-                        <div class="summary-card">
-                            <h3>Rata-rata per Transaksi</h3>
-                            <p>${document.getElementById('average-order').textContent}</p>
-                        </div>
-                        <div class="summary-card">
-                            <h3>Menu Terlaris</h3>
-                            <p>${document.getElementById('best-seller').textContent}</p>
-                        </div>
-                    </div>
-                    
-                    <h2>Detail Transaksi</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No. Order</th>
-                                <th>Tanggal</th>
-                                <th>Kasir</th>
-                                <th>Item</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            state.filteredOrders.forEach(order => {
-                const dateStr = order.date.toLocaleString('id-ID');
-                const itemsStr = order.items.map(item => 
-                    `${item.name} (${item.quantity}x)`
-                ).join(', ');
-                
-                html += `
-                    <tr>
-                        <td>${order.number}</td>
-                        <td>${dateStr}</td>
-                        <td>${order.cashier}</td>
-                        <td>${itemsStr}</td>
-                        <td>Rp ${order.total.toLocaleString('id-ID')}</td>
-                    </tr>
-                `;
-            });
-            
-            html += `
-                        </tbody>
-                    </table>
-                    <div class="print-footer">
-                        <p>Dicetak oleh sistem TarToast</p>
-                    </div>
-                </body>
-                </html>
-            `;
-            
-            printWindow.document.open();
-            printWindow.document.write(html);
-            printWindow.document.close();
-            
-            setTimeout(() => {
-                printWindow.print();
-            }, 500);
-        }
-
-        // Fungsi untuk tampilkan loading
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
-        }
-
-        // Event listeners untuk filter
-        document.getElementById('date-range').addEventListener('change', function() {
-            if (this.value === 'custom') {
-                document.getElementById('custom-date-group').style.display = 'block';
-            } else {
-                document.getElementById('custom-date-group').style.display = 'none';
-                applyFilters();
+            // Temukan menu terlaris (jika data menu tersedia)
+            if (menuSales.length > 0) {
+                const bestSeller = menuSales.reduce((prev, current) => 
+                    (prev.sold > current.sold) ? prev : current
+                );
+                document.getElementById('best-seller').textContent = 
+                    `${bestSeller.name} (${bestSeller.sold}x)`;
             }
-        });
-        
-        document.getElementById('custom-date').addEventListener('change', applyFilters);
-        document.getElementById('cashier-filter').addEventListener('change', applyFilters);
-        
-        // Fungsi untuk menerapkan filter
-        function applyFilters() {
-            filterData();
-            renderSummary();
-            renderTransactionsTable();
-            renderSalesChart();
         }
-
+        
+        // Fungsi untuk memulai interval pembaruan otomatis
+        function startAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            refreshInterval = setInterval(loadData, REFRESH_INTERVAL);
+        }
+        
         // Inisialisasi saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
-            // Event listeners untuk tombol
-            document.getElementById('reload-btn').addEventListener('click', loadSalesData);
-            document.getElementById('export-btn').addEventListener('click', exportToExcel);
-            document.getElementById('print-btn').addEventListener('click', printReport);
+            // Muat data pertama kali
+            loadData();
             
-            // Muat data awal
-            loadSalesData();
+            // Mulai auto-refresh
+            startAutoRefresh();
+            
+            // Event listener untuk tombol refresh
+            document.getElementById('refresh-btn').addEventListener('click', () => {
+                loadData();
+                startAutoRefresh(); // Reset interval setelah refresh manual
+            });
         });
     </script>
 </body>
