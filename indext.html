@@ -227,6 +227,38 @@
             font-size: 12px;
             cursor: pointer;
         }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .quantity-controls button {
+            width: 25px;
+            height: 25px;
+            border: 1px solid #ddd;
+            background: #f5f5f5;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        .quantity-controls input {
+            width: 40px;
+            text-align: center;
+            margin: 0 5px;
+            padding: 3px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .btn-quantity:hover {
+            background: #ddd;
+        }
+        .btn-quantity:active {
+            background: #ccc;
+        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -252,7 +284,7 @@
             </div>
             
             <div class="menu-controls">
-                <button class="btn-add" id="add-btn" title="Klik untuk menambah pesanan, tekan Ctrl+Klik untuk reload">+ Tambah Pesanan</button>
+                <button class="btn-add" id="add-btn">+ Tambah Pesanan</button>
             </div>
             
             <div id="order-list" class="order-list">
@@ -268,36 +300,11 @@
             <div class="form-group">
                 <label for="cashier-name">Nama Kasir:</label>
                 <select id="cashier-name" required>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    
                     <option value="">Pilih Kasir</option>
                     <option value="Fathu">Fathu</option>
                     <option value="Aziz">Aziz</option>
                     <option value="Staf1">Staf1</option>
                     <option value="Staf2">Staf2</option>
-
-
-
-
-
-
-
-
                 </select>
             </div>
         </div>
@@ -361,8 +368,9 @@
 
     <script>
         // Konfigurasi
-        const MENU_SHEET_ID = "1YgOTXFSUwLzpfK1_YQekEN7N5G_45J2o711YX86-siQ";
+        const SPREADSHEET_ID = "1YgOTXFSUwLzpfK1_YQekEN7N5G_45J2o711YX86-siQ";
         const MENU_SHEET_NAME = 'Menu';
+        const SALES_SHEET_NAME = 'Penjualan';
         const API_KEY = "AIzaSyAz9kMUAWD-MfveClgQJnNV55kTKmrx-Yk";
         const ADMIN_CREDENTIALS = {
             username: "owner",
@@ -378,31 +386,47 @@
             selectedReprintOrder: null
         };
 
-        // Fungsi yang selalu dijalankan sebelum reload
-        function executeAndReload(actionFunction) {
-            return function() {
-                // Jalankan fungsi utama
-                const result = actionFunction.apply(this, arguments);
-                
-                // Auto-reload setelah 100ms untuk memastikan semua proses selesai
-                setTimeout(() => {
-                    location.reload();
-                }, 100);
-                
-                return result;
-            };
-        }
-
         // Fungsi untuk menyimpan pesanan sementara ke localStorage
         function saveCurrentOrder() {
             localStorage.setItem('currentOrder', JSON.stringify(state.orderItems));
+            backupData();
+        }
+
+        // Fungsi untuk backup data
+        function backupData() {
+            const backup = {
+                menuItems: state.menuItems,
+                orderItems: state.orderItems,
+                dailyOrders: state.dailyOrders,
+                orderCounter: state.orderCounter,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('tartoastBackup', JSON.stringify(backup));
+        }
+
+        // Fungsi untuk restore data dari backup
+        function checkAndRestore() {
+            const backup = localStorage.getItem('tartoastBackup');
+            if (backup) {
+                try {
+                    const parsed = JSON.parse(backup);
+                    if (parsed.menuItems && parsed.dailyOrders && parsed.orderCounter) {
+                        state.menuItems = parsed.menuItems;
+                        state.dailyOrders = parsed.dailyOrders;
+                        state.orderCounter = parsed.orderCounter;
+                        console.log('Data restored from backup:', parsed.timestamp);
+                    }
+                } catch (e) {
+                    console.error('Failed to parse backup:', e);
+                }
+            }
         }
 
         // Fungsi untuk memuat menu dari Google Sheets
         async function loadMenu() {
             showLoading(true);
             try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENU_SHEET_ID}/values/${MENU_SHEET_NAME}?key=${API_KEY}`;
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${MENU_SHEET_NAME}?key=${API_KEY}`;
                 const response = await fetch(url);
                 
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -411,10 +435,10 @@
                 
                 if (data.values && data.values.length > 1) {
                     state.menuItems = data.values.slice(1).map((row, index) => ({
-                        id: `item-${index}-${Date.now()}`,
+                        id: `item-${index}-${row[0].substring(0, 3).toLowerCase()}`,
                         name: row[0] || 'Menu tanpa nama',
                         price: parseInt(row[1]) || 0
-                    }));
+                    })).filter(item => item.name !== 'Menu tanpa nama');
                     
                     renderMenuDropdown();
                     renderOrder();
@@ -426,10 +450,10 @@
                 console.error('Error:', error);
                 // Fallback data dummy
                 state.menuItems = [
-                    { id: '1', name: 'Nasi Goreng', price: 25000 },
-                    { id: '2', name: 'Mie Goreng', price: 20000 },
-                    { id: '3', name: 'Es Teh', price: 5000 },
-                    { id: '4', name: 'Es Jeruk', price: 7000 }
+                    { id: 'nasgor-1', name: 'Nasi Goreng', price: 25000 },
+                    { id: 'migor-2', name: 'Mie Goreng', price: 20000 },
+                    { id: 'esteh-3', name: 'Es Teh', price: 5000 },
+                    { id: 'esjer-4', name: 'Es Jeruk', price: 7000 }
                 ];
                 renderMenuDropdown();
                 renderOrder();
@@ -441,26 +465,52 @@
 
         // Fungsi untuk menambah item ke pesanan
         function addToOrder() {
-            const menuId = document.getElementById('menu-select').value;
-            if (!menuId) {
+            const menuSelect = document.getElementById('menu-select');
+            if (!menuSelect.value) {
                 alert('Silakan pilih menu terlebih dahulu');
                 return false;
             }
             
-            const menuItem = state.menuItems.find(item => item.id === menuId);
-            if (!menuItem) return false;
+            const menuItem = state.menuItems.find(item => item.id === menuSelect.value);
+            if (!menuItem) {
+                alert('Menu tidak valid');
+                return false;
+            }
+            
+            // Cek apakah item sudah ada di pesanan
+            const existingItem = state.orderItems.find(item => item.menuId === menuItem.id);
+            if (existingItem) {
+                if (confirm(`${menuItem.name} sudah ada di pesanan. Tambah jumlah?`)) {
+                    existingItem.quantity++;
+                    saveCurrentOrder();
+                    return true;
+                }
+                return false;
+            }
             
             const newItem = {
-                id: `order-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                id: `order-${Date.now()}`,
                 menuId: menuItem.id,
                 name: menuItem.name,
                 price: menuItem.price,
-                quantity: 1
+                quantity: 1,
+                timestamp: new Date().toISOString()
             };
             
             state.orderItems.push(newItem);
             saveCurrentOrder();
             return true;
+        }
+
+        // Fungsi untuk mengubah quantity item
+        function editQuantity(itemId, newQuantity) {
+            const item = state.orderItems.find(item => item.id === itemId);
+            if (item && newQuantity > 0) {
+                item.quantity = newQuantity;
+                saveCurrentOrder();
+                return true;
+            }
+            return false;
         }
 
         // Fungsi untuk menghapus item dari pesanan
@@ -470,8 +520,52 @@
             return true;
         }
 
+        // Fungsi untuk menyimpan order ke Google Sheets
+        async function saveOrderToSheet(order) {
+            showLoading(true);
+            try {
+                // Format data untuk Google Sheets
+                const itemsString = order.items.map(item => `${item.name} x${item.quantity}`).join(', ');
+                const values = [
+                    [
+                        order.number.toString(),
+                        new Date().toISOString(),
+                        order.cashier,
+                        itemsString,
+                        order.total.toString()
+                    ]
+                ];
+                
+                const body = {
+                    values: values
+                };
+                
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${SALES_SHEET_NAME}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS&key=${API_KEY}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Gagal menyimpan ke sheet: ${response.status}`);
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error saving to sheet:', error);
+                alert('Gagal menyimpan ke Google Sheets. Data akan disimpan secara lokal saja.');
+                return false;
+            } finally {
+                showLoading(false);
+            }
+        }
+
         // Fungsi untuk simpan order
-        function saveOrder() {
+        async function saveOrder() {
             const cashierName = document.getElementById('cashier-name').value;
             
             if (!cashierName) {
@@ -489,12 +583,16 @@
             
             const order = {
                 number: state.orderCounter,
-                date: now.toLocaleString('id-ID'),
+                date: now.toISOString(),
                 cashier: cashierName,
                 items: JSON.parse(JSON.stringify(state.orderItems)),
                 total: total
             };
             
+            // Coba simpan ke Google Sheets
+            const sheetSaved = await saveOrderToSheet(order);
+            
+            // Simpan ke localStorage
             state.dailyOrders.push(order);
             localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
             
@@ -523,15 +621,62 @@
                 <head>
                     <title>Struk TarToast</title>
                     <style>
-                        body { font-family: Arial; margin: 0; padding: 10px; }
-                        .receipt { width: 80mm; margin: 0 auto; }
-                        .header { text-align: center; }
-                        .title { font-size: 18px; font-weight: bold; }
-                        .divider { border-top: 1px dashed #000; margin: 5px 0; }
-                        .item { display: flex; justify-content: space-between; }
-                        .total { font-weight: bold; border-top: 1px dashed #000; padding-top: 5px; }
-                        .footer { text-align: center; margin-top: 10px; font-size: 12px; }
-                        .reprint-notice { font-size: 10px; color: #666; text-align: center; margin-bottom: 5px; }
+                        body { 
+                            font-family: 'Courier New', monospace; 
+                            margin: 0; 
+                            padding: 10px;
+                            font-size: 14px;
+                        }
+                        .receipt { 
+                            width: 72mm; 
+                            margin: 0 auto; 
+                        }
+                        .header { 
+                            text-align: center; 
+                            margin-bottom: 10px;
+                        }
+                        .title { 
+                            font-weight: bold; 
+                            font-size: 16px;
+                            margin-bottom: 5px;
+                        }
+                        .divider { 
+                            border-top: 1px dashed #000; 
+                            margin: 5px 0; 
+                        }
+                        .item-row { 
+                            display: flex; 
+                            justify-content: space-between;
+                            margin: 3px 0;
+                        }
+                        .item-name {
+                            flex: 3;
+                        }
+                        .item-qty {
+                            flex: 1;
+                            text-align: center;
+                        }
+                        .item-price {
+                            flex: 2;
+                            text-align: right;
+                        }
+                        .total { 
+                            font-weight: bold; 
+                            border-top: 1px dashed #000; 
+                            padding-top: 5px;
+                            margin-top: 5px;
+                        }
+                        .footer { 
+                            text-align: center; 
+                            margin-top: 10px; 
+                            font-size: 12px; 
+                        }
+                        .reprint-notice { 
+                            font-size: 10px; 
+                            color: #666; 
+                            text-align: center; 
+                            margin-bottom: 5px; 
+                        }
                     </style>
                 </head>
                 <body>
@@ -539,30 +684,38 @@
                         ${order.isReprint ? '<div class="reprint-notice">** CETAK ULANG **</div>' : ''}
                         <div class="header">
                             <div class="title">TARTOAST</div>
-                            <div>${now.toLocaleString('id-ID')}</div>
+                            <div>${now.toLocaleString('id-ID', { 
+                                day: '2-digit', 
+                                month: '2-digit', 
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}</div>
                             <div>Kasir: ${cashierName}</div>
-                            <div>Order #${order.number}</div>
+                            <div>Order #${order.number.toString().padStart(4, '0')}</div>
                         </div>
                         <div class="divider"></div>
             `;
             
             order.items.forEach(item => {
                 receiptContent += `
-                    <div class="item">
-                        <span>${item.name} x${item.quantity}</span>
-                        <span>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                    <div class="item-row">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-qty">x${item.quantity}</div>
+                        <div class="item-price">${(item.price * item.quantity).toLocaleString('id-ID')}</div>
                     </div>
                 `;
             });
             
             receiptContent += `
                         <div class="divider"></div>
-                        <div class="item total">
-                            <span>TOTAL</span>
-                            <span>Rp ${total.toLocaleString('id-ID')}</span>
+                        <div class="item-row total">
+                            <div>TOTAL</div>
+                            <div></div>
+                            <div>${total.toLocaleString('id-ID')}</div>
                         </div>
                         <div class="footer">
-                            Terima kasih
+                            Terima kasih telah berkunjung
                         </div>
                     </div>
                 </body>
@@ -586,7 +739,7 @@
             document.getElementById('reset-username').value = '';
             document.getElementById('reset-password').value = '';
             document.getElementById('reset-error').style.display = 'none';
-            return false; // Tidak langsung reload, tunggu konfirmasi
+            return false;
         }
 
         // Fungsi untuk konfirmasi reset
@@ -656,7 +809,11 @@
                     <div class="order-item" data-id="${item.id}">
                         <div class="order-info">
                             <strong>${item.name}</strong>
-                            <p>Rp ${item.price.toLocaleString('id-ID')} × ${item.quantity}</p>
+                            <div class="quantity-controls">
+                                <button class="btn-quantity minus" data-id="${item.id}">-</button>
+                                <input type="number" value="${item.quantity}" min="1" class="quantity-input" data-id="${item.id}">
+                                <button class="btn-quantity plus" data-id="${item.id}">+</button>
+                            </div>
                         </div>
                         <div class="order-controls">
                             <span>Rp ${itemTotal.toLocaleString('id-ID')}</span>
@@ -669,15 +826,48 @@
             orderList.innerHTML = orderHtml;
             totalAmount.textContent = total.toLocaleString('id-ID');
             
+            // Event listeners untuk tombol hapus
             document.querySelectorAll('.btn-remove').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const itemId = e.target.getAttribute('data-id');
-                    executeAndReload(() => removeOrderItem(itemId))();
+                    if (confirm('Hapus item ini dari pesanan?')) {
+                        removeOrderItem(itemId);
+                        renderOrder();
+                    }
+                });
+            });
+            
+            // Event listeners untuk tombol quantity
+            document.querySelectorAll('.btn-quantity').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const itemId = e.target.getAttribute('data-id');
+                    const input = document.querySelector(`.quantity-input[data-id="${itemId}"]`);
+                    let newQuantity = parseInt(input.value);
+                    
+                    if (e.target.classList.contains('plus')) {
+                        newQuantity++;
+                    } else {
+                        newQuantity = Math.max(1, newQuantity - 1);
+                    }
+                    
+                    input.value = newQuantity;
+                    editQuantity(itemId, newQuantity);
+                    renderOrder();
+                });
+            });
+            
+            // Event listener untuk input quantity manual
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const itemId = e.target.getAttribute('data-id');
+                    const newQuantity = Math.max(1, parseInt(e.target.value) || 1);
+                    editQuantity(itemId, newQuantity);
+                    renderOrder();
                 });
             });
         }
 
-        // Fungsi untuk render/simpan riwayat order
+        // Fungsi untuk render riwayat order
         function renderOrderHistory() {
             const orderHistory = document.getElementById('order-history');
             const emptyHistory = document.getElementById('empty-history');
@@ -700,10 +890,10 @@
                 historyHtml += `
                     <div class="order-history-item">
                         <button class="reprint-btn" data-index="${index}">Cetak Ulang</button>
-                        <strong>Order #${order.number}</strong> (${order.date})<br>
+                        <strong>Order #${order.number}</strong> (${new Date(order.date).toLocaleString('id-ID')})<br>
                         Kasir: ${order.cashier}<br>
                         ${order.items.map(item => `${item.name} x${item.quantity}`).join(', ')}<br>
-                        <strong>Total Yang di terima: Rp ${order.total.toLocaleString('id-ID')}</strong>
+                        <strong>Total: Rp ${order.total.toLocaleString('id-ID')}</strong>
                     </div>
                 `;
             });
@@ -749,10 +939,8 @@
             const modal = document.getElementById('reprint-modal');
             const optionsContainer = document.getElementById('reprint-options');
             
-            // Kosongkan container options
             optionsContainer.innerHTML = '';
             
-            // Tambahkan radio button untuk setiap order
             state.dailyOrders.forEach((order, index) => {
                 const div = document.createElement('div');
                 div.style.marginBottom = '10px';
@@ -766,7 +954,6 @@
                 radio.id = `order-${index}`;
                 radio.style.marginRight = '10px';
                 
-                // Pilih radio pertama secara default
                 if (index === 0) {
                     radio.checked = true;
                     state.selectedReprintOrder = index;
@@ -779,7 +966,7 @@
                 const label = document.createElement('label');
                 label.htmlFor = `order-${index}`;
                 label.innerHTML = `
-                    <strong>Order #${order.number}</strong> (${order.date}) - 
+                    <strong>Order #${order.number}</strong> (${new Date(order.date).toLocaleString('id-ID')}) - 
                     Kasir: ${order.cashier}<br>
                     Total: Rp ${order.total.toLocaleString('id-ID')}
                 `;
@@ -808,9 +995,9 @@
         }
 
         // Fungsi untuk proses lengkap: simpan, cetak, hapus
-        function completeOrderProcess() {
+        async function completeOrderProcess() {
             // 1. Simpan order
-            const order = saveOrder();
+            const order = await saveOrder();
             if (!order) return false;
             
             // 2. Cetak struk
@@ -819,9 +1006,9 @@
             // 3. Hapus pesanan
             clearOrder();
             
-            // Simpan perubahan ke local Storage
-            localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
-            localStorage.removeItem('currentOrder');
+            // Render ulang tampilan
+            renderOrder();
+            renderOrderHistory();
             
             // Tampilkan notifikasi
             alert(`Order #${order.number} telah disimpan dan dicetak!\nTotal: Rp ${order.total.toLocaleString('id-ID')}`);
@@ -831,10 +1018,18 @@
 
         // Inisialisasi saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
+            // Cek dan restore data dari backup
+            checkAndRestore();
+            
             // Event listeners
-            document.getElementById('add-btn').addEventListener('click', executeAndReload(addToOrder));
+            document.getElementById('add-btn').addEventListener('click', () => {
+                addToOrder();
+                renderOrder();
+                renderOrderHistory();
+            });
+            
             document.getElementById('reload-btn').addEventListener('click', () => location.reload());
-            document.getElementById('print-btn').addEventListener('click', executeAndReload(completeOrderProcess));
+            document.getElementById('print-btn').addEventListener('click', completeOrderProcess);
             document.getElementById('reset-btn').addEventListener('click', resetDailyOrders);
             document.getElementById('reprint-btn').addEventListener('click', showReprintModal);
             
