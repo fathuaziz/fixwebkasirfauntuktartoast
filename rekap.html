@@ -12,7 +12,7 @@
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             background-color: white;
             padding: 20px;
@@ -29,6 +29,20 @@
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
         }
         .filters {
             display: flex;
@@ -51,13 +65,36 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+        .summary-cards {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .summary-card {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .summary-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
         th, td {
-            padding: 12px;
+            padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
@@ -66,51 +103,11 @@
             font-weight: bold;
         }
         tr:hover {
-            background-color: #f9f9f9;
+            background-color: #f5f5f5;
         }
-        .total-row {
-            font-weight: bold;
-            background-color: #e6f7ff;
-        }
-        .grand-total {
-            font-weight: bold;
-            background-color: #d4edda;
-            font-size: 1.1em;
-        }
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top: 4px solid #3498db;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        .buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-export {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-reload {
-            background-color: #17a2b8;
-            color: white;
+        .chart-container {
+            height: 400px;
+            margin-top: 30px;
         }
         .watermark {
             position: fixed;
@@ -119,16 +116,36 @@
             color: rgba(0,0,0,0.2);
             font-size: 12px;
         }
-        .chart-container {
-            margin-top: 30px;
-            height: 400px;
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-reload {
+            background-color: #2196f3;
+            color: white;
+        }
+        .btn-export {
+            background-color: #4caf50;
+            color: white;
+        }
+        .btn-print {
+            background-color: #9c27b0;
+            color: white;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
     </style>
-    <!-- Chart.js untuk grafik -->
+    <!-- Chart.js untuk visualisasi data -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -140,77 +157,84 @@
             <p>Memuat data penjualan...</p>
         </div>
         
-        <div class="section">
-            <h2>Filter Data</h2>
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="date-range">Rentang Tanggal:</label>
-                    <select id="date-range">
-                        <option value="today">Hari Ini</option>
-                        <option value="yesterday">Kemarin</option>
-                        <option value="week">Minggu Ini</option>
-                        <option value="month">Bulan Ini</option>
-                        <option value="custom">Custom</option>
-                    </select>
-                </div>
-                <div class="filter-group" id="custom-date-group" style="display: none;">
-                    <label for="start-date">Tanggal Mulai:</label>
-                    <input type="date" id="start-date">
-                </div>
-                <div class="filter-group" id="custom-date-group-end" style="display: none;">
-                    <label for="end-date">Tanggal Akhir:</label>
-                    <input type="date" id="end-date">
-                </div>
-                <div class="filter-group">
-                    <label for="cashier-filter">Kasir:</label>
-                    <select id="cashier-filter">
-                        <option value="all">Semua Kasir</option>
-                        <option value="Fathu">Fathu</option>
-                        <option value="Aziz">Aziz</option>
-                        <option value="Staf1">Staf1</option>
-                        <option value="Staf2">Staf2</option>
-                    </select>
-                </div>
+        <div class="buttons">
+            <button class="btn-reload" id="reload-btn">Muat Ulang Data</button>
+            <button class="btn-export" id="export-btn">Ekspor ke Excel</button>
+            <button class="btn-print" id="print-btn">Cetak Laporan</button>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label for="date-range">Rentang Tanggal:</label>
+                <select id="date-range">
+                    <option value="today">Hari Ini</option>
+                    <option value="yesterday">Kemarin</option>
+                    <option value="week">Minggu Ini</option>
+                    <option value="month">Bulan Ini</option>
+                    <option value="all">Semua Data</option>
+                    <option value="custom">Custom</option>
+                </select>
             </div>
-            
-            <div class="buttons">
-                <button class="btn-reload" id="reload-btn">Muat Ulang Data</button>
-                <button class="btn-export" id="export-btn">Export ke Excel</button>
+            <div class="filter-group" id="custom-date-group" style="display: none;">
+                <label for="custom-date">Tanggal Custom:</label>
+                <input type="date" id="custom-date">
+            </div>
+            <div class="filter-group">
+                <label for="cashier-filter">Filter Kasir:</label>
+                <select id="cashier-filter">
+                    <option value="all">Semua Kasir</option>
+                    <option value="Fathu">Fathu</option>
+                    <option value="Aziz">Aziz</option>
+                    <option value="Staf1">Staf1</option>
+                    <option value="Staf2">Staf2</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h3>Total Transaksi</h3>
+                <div class="value" id="total-transactions">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total Pendapatan</h3>
+                <div class="value" id="total-revenue">Rp 0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Rata-rata per Transaksi</h3>
+                <div class="value" id="average-order">Rp 0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Menu Terlaris</h3>
+                <div class="value" id="best-seller">-</div>
             </div>
         </div>
         
         <div class="section">
-            <h2>Data Penjualan</h2>
-            <div id="sales-data">
-                <table id="sales-table">
-                    <thead>
-                        <tr>
-                            <th>No. Order</th>
-                            <th>Tanggal</th>
-                            <th>Kasir</th>
-                            <th>Item</th>
-                            <th>Jumlah</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sales-table-body">
-                        <!-- Data akan diisi oleh JavaScript -->
-                    </tbody>
-                    <tfoot>
-                        <tr class="grand-total">
-                            <td colspan="5">TOTAL KESELURUHAN</td>
-                            <td id="grand-total">Rp 0</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2>Statistik Penjualan</h2>
+            <h2>Grafik Penjualan</h2>
             <div class="chart-container">
-                <canvas id="salesChart"></canvas>
+                <canvas id="sales-chart"></canvas>
             </div>
+        </div>
+        
+        <div class="section">
+            <h2>Detail Transaksi</h2>
+            <table id="transactions-table">
+                <thead>
+                    <tr>
+                        <th>No. Order</th>
+                        <th>Tanggal</th>
+                        <th>Kasir</th>
+                        <th>Item</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Memuat data...</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     
@@ -218,180 +242,307 @@
 
     <script>
         // Konfigurasi
-        const SALES_DATA_KEY = 'tartoast_sales_data';
+        const SALES_SHEET_ID = "1YgOTXFSUwLzpfK1_YQekEN7N5G_45J2o711YX86-siQ";
+        const SALES_SHEET_NAME = 'Penjualan';
+        const API_KEY = "AIzaSyAz9kMUAWD-MfveClgQJnNV55kTKmrx-Yk";
         
         // Variabel global untuk state aplikasi
         let state = {
-            allOrders: JSON.parse(localStorage.getItem(SALES_DATA_KEY)) || [],
+            allOrders: [],
             filteredOrders: [],
             salesChart: null
         };
 
-        // Fungsi untuk memuat data penjualan
-        function loadSalesData() {
+        // Fungsi untuk memuat data dari Google Sheets
+        async function loadSalesData() {
             showLoading(true);
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SALES_SHEET_ID}/values/${SALES_SHEET_NAME}?key=${API_KEY}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                if (data.values && data.values.length > 1) {
+                    // Simpan semua data ke state
+                    state.allOrders = parseSalesData(data.values);
+                    
+                    // Filter data default (hari ini)
+                    filterData();
+                    
+                    // Render tampilan
+                    renderSummary();
+                    renderTransactionsTable();
+                    renderSalesChart();
+                } else {
+                    throw new Error('Data penjualan kosong');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Fallback data dummy jika gagal mengambil dari server
+                state.allOrders = generateDummyData();
+                filterData();
+                renderSummary();
+                renderTransactionsTable();
+                renderSalesChart();
+                alert('Menggunakan data lokal karena gagal mengambil dari server');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Fungsi untuk parsing data dari Google Sheets
+        function parseSalesData(sheetData) {
+            const headers = sheetData[0];
+            const rows = sheetData.slice(1);
             
-            // Coba ambil data dari localStorage terlebih dahulu
-            const savedData = localStorage.getItem(SALES_DATA_KEY);
-            if (savedData) {
-                state.allOrders = JSON.parse(savedData);
-                applyFilters();
-            } else {
-                state.allOrders = [];
-                applyFilters();
+            return rows.map(row => {
+                const order = {};
+                headers.forEach((header, index) => {
+                    order[header] = row[index];
+                });
+                
+                // Konversi data yang diperlukan
+                if (order.items) {
+                    try {
+                        order.items = JSON.parse(order.items);
+                    } catch (e) {
+                        order.items = [];
+                    }
+                }
+                
+                if (order.total) {
+                    order.total = parseInt(order.total) || 0;
+                }
+                
+                if (order.date) {
+                    order.date = new Date(order.date);
+                } else {
+                    order.date = new Date();
+                }
+                
+                return order;
+            });
+        }
+
+        // Fungsi untuk generate data dummy (fallback)
+        function generateDummyData() {
+            const dummyOrders = [];
+            const menuItems = [
+                { name: "Nasi Goreng", price: 25000 },
+                { name: "Mie Goreng", price: 20000 },
+                { name: "Es Teh", price: 5000 },
+                { name: "Es Jeruk", price: 7000 }
+            ];
+            const cashiers = ["Fathu", "Aziz", "Staf1", "Staf2"];
+            
+            // Data untuk 7 hari terakhir
+            for (let i = 0; i < 7; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                
+                // 3-10 order per hari
+                const ordersPerDay = 3 + Math.floor(Math.random() * 8);
+                
+                for (let j = 0; j < ordersPerDay; j++) {
+                    const itemsCount = 1 + Math.floor(Math.random() * 4);
+                    const items = [];
+                    let total = 0;
+                    
+                    for (let k = 0; k < itemsCount; k++) {
+                        const menuItem = menuItems[Math.floor(Math.random() * menuItems.length)];
+                        const quantity = 1 + Math.floor(Math.random() * 3);
+                        
+                        items.push({
+                            name: menuItem.name,
+                            price: menuItem.price,
+                            quantity: quantity
+                        });
+                        
+                        total += menuItem.price * quantity;
+                    }
+                    
+                    dummyOrders.push({
+                        number: `ORD-${date.getDate()}${date.getMonth()+1}${date.getFullYear()}-${j+1}`,
+                        date: new Date(date),
+                        cashier: cashiers[Math.floor(Math.random() * cashiers.length)],
+                        items: items,
+                        total: total
+                    });
+                }
             }
             
-            showLoading(false);
+            return dummyOrders;
         }
 
-        // Fungsi untuk menyimpan data penjualan ke localStorage
-        function saveSalesData() {
-            localStorage.setItem(SALES_DATA_KEY, JSON.stringify(state.allOrders));
-        }
-
-        // Fungsi untuk menerapkan filter
-        function applyFilters() {
+        // Fungsi untuk filter data berdasarkan kriteria
+        function filterData() {
             const dateRange = document.getElementById('date-range').value;
-            const cashier = document.getElementById('cashier-filter').value;
-            
+            const cashierFilter = document.getElementById('cashier-filter').value;
             let filtered = [...state.allOrders];
             
             // Filter berdasarkan tanggal
             const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             
-            if (dateRange === 'today') {
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                filtered = filtered.filter(order => {
-                    const orderDate = new Date(order.date);
-                    return orderDate >= today;
-                });
-            } else if (dateRange === 'yesterday') {
-                const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                filtered = filtered.filter(order => {
-                    const orderDate = new Date(order.date);
-                    return orderDate >= yesterday && orderDate < today;
-                });
-            } else if (dateRange === 'week') {
-                const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
-                filtered = filtered.filter(order => {
-                    const orderDate = new Date(order.date);
-                    return orderDate >= startOfWeek;
-                });
-            } else if (dateRange === 'month') {
-                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                filtered = filtered.filter(order => {
-                    const orderDate = new Date(order.date);
-                    return orderDate >= startOfMonth;
-                });
-            } else if (dateRange === 'custom') {
-                const startDate = document.getElementById('start-date').value;
-                const endDate = document.getElementById('end-date').value;
-                
-                if (startDate) {
-                    const start = new Date(startDate);
-                    filtered = filtered.filter(order => {
-                        const orderDate = new Date(order.date);
-                        return orderDate >= start;
-                    });
-                }
-                
-                if (endDate) {
-                    const end = new Date(endDate);
-                    end.setDate(end.getDate() + 1); // Sampai akhir hari yang dipilih
-                    filtered = filtered.filter(order => {
-                        const orderDate = new Date(order.date);
-                        return orderDate < end;
-                    });
-                }
+            switch (dateRange) {
+                case 'today':
+                    filtered = filtered.filter(order => 
+                        order.date >= today
+                    );
+                    break;
+                case 'yesterday':
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    filtered = filtered.filter(order => 
+                        order.date >= yesterday && order.date < today
+                    );
+                    break;
+                case 'week':
+                    const weekAgo = new Date(today);
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    filtered = filtered.filter(order => 
+                        order.date >= weekAgo
+                    );
+                    break;
+                case 'month':
+                    const monthAgo = new Date(today);
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    filtered = filtered.filter(order => 
+                        order.date >= monthAgo
+                    );
+                    break;
+                case 'custom':
+                    const customDate = new Date(document.getElementById('custom-date').value);
+                    if (!isNaN(customDate.getTime())) {
+                        const nextDay = new Date(customDate);
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        filtered = filtered.filter(order => 
+                            order.date >= customDate && order.date < nextDay
+                        );
+                    }
+                    break;
+                // 'all' tidak melakukan filter tanggal
             }
             
             // Filter berdasarkan kasir
-            if (cashier !== 'all') {
-                filtered = filtered.filter(order => order.cashier === cashier);
+            if (cashierFilter !== 'all') {
+                filtered = filtered.filter(order => 
+                    order.cashier === cashierFilter
+                );
             }
             
-            state.filteredOrders = filtered;
-            renderSalesTable();
-            renderSalesChart();
+            // Simpan hasil filter
+            state.filteredOrders = filtered.sort((a, b) => b.date - a.date);
         }
 
-        // Fungsi untuk merender tabel penjualan
-        function renderSalesTable() {
-            const tableBody = document.getElementById('sales-table-body');
-            tableBody.innerHTML = '';
+        // Fungsi untuk render summary cards
+        function renderSummary() {
+            const totalTransactions = state.filteredOrders.length;
+            const totalRevenue = state.filteredOrders.reduce((sum, order) => sum + order.total, 0);
+            const averageOrder = totalTransactions > 0 ? Math.round(totalRevenue / totalTransactions) : 0;
+            
+            // Hitung menu terlaris
+            const menuCounts = {};
+            state.filteredOrders.forEach(order => {
+                order.items.forEach(item => {
+                    if (!menuCounts[item.name]) {
+                        menuCounts[item.name] = 0;
+                    }
+                    menuCounts[item.name] += item.quantity;
+                });
+            });
+            
+            let bestSeller = '-';
+            let maxCount = 0;
+            for (const [menu, count] of Object.entries(menuCounts)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    bestSeller = menu;
+                }
+            }
+            
+            // Update DOM
+            document.getElementById('total-transactions').textContent = totalTransactions;
+            document.getElementById('total-revenue').textContent = `Rp ${totalRevenue.toLocaleString('id-ID')}`;
+            document.getElementById('average-order').textContent = `Rp ${averageOrder.toLocaleString('id-ID')}`;
+            document.getElementById('best-seller').textContent = bestSeller;
+        }
+
+        // Fungsi untuk render tabel transaksi
+        function renderTransactionsTable() {
+            const tableBody = document.querySelector('#transactions-table tbody');
             
             if (state.filteredOrders.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="6" style="text-align: center;">Tidak ada data penjualan</td>`;
-                tableBody.appendChild(row);
-                document.getElementById('grand-total').textContent = 'Rp 0';
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Tidak ada data transaksi</td>
+                    </tr>
+                `;
                 return;
             }
             
-            let grandTotal = 0;
-            
+            let html = '';
             state.filteredOrders.forEach(order => {
-                const row = document.createElement('tr');
+                const dateStr = order.date.toLocaleString('id-ID');
+                const itemsStr = order.items.map(item => 
+                    `${item.name} (${item.quantity}x)`
+                ).join(', ');
                 
-                // Hitung jumlah item
-                const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
-                
-                row.innerHTML = `
-                    <td>${order.number}</td>
-                    <td>${order.date}</td>
-                    <td>${order.cashier}</td>
-                    <td>${order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</td>
-                    <td>${itemCount}</td>
-                    <td>Rp ${order.total.toLocaleString('id-ID')}</td>
+                html += `
+                    <tr>
+                        <td>${order.number}</td>
+                        <td>${dateStr}</td>
+                        <td>${order.cashier}</td>
+                        <td>${itemsStr}</td>
+                        <td>Rp ${order.total.toLocaleString('id-ID')}</td>
+                    </tr>
                 `;
-                
-                tableBody.appendChild(row);
-                grandTotal += order.total;
             });
             
-            document.getElementById('grand-total').textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+            tableBody.innerHTML = html;
         }
 
-        // Fungsi untuk merender chart penjualan
+        // Fungsi untuk render chart penjualan
         function renderSalesChart() {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            
-            // Kelompokkan data per hari
-            const dailyData = {};
-            state.filteredOrders.forEach(order => {
-                const date = new Date(order.date);
-                const dateStr = `${date.getDate()}/${date.getMonth() + 1}`;
-                
-                if (!dailyData[dateStr]) {
-                    dailyData[dateStr] = {
-                        total: 0,
-                        count: 0
-                    };
-                }
-                
-                dailyData[dateStr].total += order.total;
-                dailyData[dateStr].count++;
-            });
-            
-            const labels = Object.keys(dailyData);
-            const totals = labels.map(date => dailyData[date].total);
-            const counts = labels.map(date => dailyData[date].count);
+            const ctx = document.getElementById('sales-chart').getContext('2d');
             
             // Hancurkan chart sebelumnya jika ada
             if (state.salesChart) {
                 state.salesChart.destroy();
             }
             
+            // Siapkan data untuk chart
+            const dates = {};
+            state.filteredOrders.forEach(order => {
+                const dateKey = order.date.toLocaleDateString('id-ID');
+                if (!dates[dateKey]) {
+                    dates[dateKey] = {
+                        total: 0,
+                        count: 0
+                    };
+                }
+                dates[dateKey].total += order.total;
+                dates[dateKey].count++;
+            });
+            
+            const sortedDates = Object.keys(dates).sort((a, b) => {
+                return new Date(a) - new Date(b);
+            });
+            
+            const revenueData = sortedDates.map(date => dates[date].total);
+            const transactionData = sortedDates.map(date => dates[date].count);
+            
             // Buat chart baru
             state.salesChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: sortedDates,
                     datasets: [
                         {
-                            label: 'Total Penjualan (Rp)',
-                            data: totals,
+                            label: 'Pendapatan (Rp)',
+                            data: revenueData,
                             backgroundColor: 'rgba(54, 162, 235, 0.5)',
                             borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1,
@@ -399,7 +550,7 @@
                         },
                         {
                             label: 'Jumlah Transaksi',
-                            data: counts,
+                            data: transactionData,
                             backgroundColor: 'rgba(255, 99, 132, 0.5)',
                             borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 1,
@@ -418,7 +569,7 @@
                             position: 'left',
                             title: {
                                 display: true,
-                                text: 'Total Penjualan (Rp)'
+                                text: 'Pendapatan (Rp)'
                             }
                         },
                         y1: {
@@ -438,106 +589,173 @@
             });
         }
 
-        // Fungsi untuk export ke Excel
+        // Fungsi untuk ekspor data ke Excel
         function exportToExcel() {
-            if (state.filteredOrders.length === 0) {
-                alert('Tidak ada data untuk diexport');
-                return;
-            }
-            
-            let csvContent = "No. Order,Tanggal,Kasir,Item,Jumlah,Total\n";
-            
-            state.filteredOrders.forEach(order => {
-                const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
-                const items = order.items.map(item => `${item.name} (x${item.quantity})`).join('; ');
-                
-                csvContent += `"${order.number}","${order.date}","${order.cashier}","${items}",${itemCount},${order.total}\n`;
+            // Format data untuk ekspor
+            const exportData = state.filteredOrders.map(order => {
+                return {
+                    'No. Order': order.number,
+                    'Tanggal': order.date.toLocaleString('id-ID'),
+                    'Kasir': order.cashier,
+                    'Item': order.items.map(item => 
+                        `${item.name} x${item.quantity} @Rp${item.price.toLocaleString('id-ID')}`
+                    ).join(', '),
+                    'Total': order.total
+                };
             });
             
-            // Hitung grand total
-            const grandTotal = state.filteredOrders.reduce((sum, order) => sum + order.total, 0);
-            csvContent += `"","","","Total Keselurhan","",${grandTotal}\n`;
+            // Buat CSV
+            let csv = 'No. Order,Tanggal,Kasir,Item,Total\n';
+            exportData.forEach(row => {
+                csv += `"${row['No. Order']}","${row['Tanggal']}","${row['Kasir']}","${row['Item']}",${row['Total']}\n`;
+            });
             
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            // Buat blob dan download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.setAttribute('href', url);
-            link.setAttribute('download', `rekap_penjualan_tartoast_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute('download', `rekap_penjualan_${new Date().toISOString().slice(0,10)}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // Fungsi untuk menampilkan loading
+        // Fungsi untuk cetak laporan
+        function printReport() {
+            const printWindow = window.open('', '_blank');
+            const now = new Date();
+            
+            let html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Laporan Penjualan TarToast</title>
+                    <style>
+                        body { font-family: Arial; margin: 0; padding: 20px; }
+                        h1 { text-align: center; }
+                        .print-header { margin-bottom: 20px; }
+                        .print-summary { display: flex; justify-content: space-between; margin-bottom: 20px; }
+                        .summary-card { padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 23%; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                        th { background-color: #f2f2f2; }
+                        .print-footer { margin-top: 30px; text-align: right; font-style: italic; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Laporan Penjualan TarToast</h1>
+                    <div class="print-header">
+                        <p>Tanggal Cetak: ${now.toLocaleString('id-ID')}</p>
+                        <p>Rentang Laporan: ${document.getElementById('date-range').options[document.getElementById('date-range').selectedIndex].text}</p>
+                        <p>Kasir: ${document.getElementById('cashier-filter').value === 'all' ? 'Semua Kasir' : document.getElementById('cashier-filter').value}</p>
+                    </div>
+                    
+                    <div class="print-summary">
+                        <div class="summary-card">
+                            <h3>Total Transaksi</h3>
+                            <p>${document.getElementById('total-transactions').textContent}</p>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Total Pendapatan</h3>
+                            <p>${document.getElementById('total-revenue').textContent}</p>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Rata-rata per Transaksi</h3>
+                            <p>${document.getElementById('average-order').textContent}</p>
+                        </div>
+                        <div class="summary-card">
+                            <h3>Menu Terlaris</h3>
+                            <p>${document.getElementById('best-seller').textContent}</p>
+                        </div>
+                    </div>
+                    
+                    <h2>Detail Transaksi</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No. Order</th>
+                                <th>Tanggal</th>
+                                <th>Kasir</th>
+                                <th>Item</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            state.filteredOrders.forEach(order => {
+                const dateStr = order.date.toLocaleString('id-ID');
+                const itemsStr = order.items.map(item => 
+                    `${item.name} (${item.quantity}x)`
+                ).join(', ');
+                
+                html += `
+                    <tr>
+                        <td>${order.number}</td>
+                        <td>${dateStr}</td>
+                        <td>${order.cashier}</td>
+                        <td>${itemsStr}</td>
+                        <td>Rp ${order.total.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    <div class="print-footer">
+                        <p>Dicetak oleh sistem TarToast</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.open();
+            printWindow.document.write(html);
+            printWindow.document.close();
+            
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        }
+
+        // Fungsi untuk tampilkan loading
         function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'block' : 'none';
         }
 
-        // Fungsi untuk sinkronisasi data dari kasir (simulasi)
-        function syncFromCashier() {
-            // Dalam implementasi nyata, ini bisa dihubungkan dengan API atau metode lain
-            // Untuk demo, kita akan mengambil data dari localStorage kasir
-            const cashierData = JSON.parse(localStorage.getItem('dailyOrders')) || [];
-            
-            // Cari order baru yang belum ada di data rekap
-            const newOrders = cashierData.filter(cashierOrder => 
-                !state.allOrders.some(rekapOrder => 
-                    rekapOrder.number === cashierOrder.number && 
-                    rekapOrder.date === cashierOrder.date
-                )
-            );
-            
-            if (newOrders.length > 0) {
-                // Tambahkan ke data rekap
-                state.allOrders = [...state.allOrders, ...newOrders];
-                saveSalesData();
-                applyFilters();
-                alert(`Ditambahkan ${newOrders.length} transaksi baru dari kasir`);
-            } else {
-                alert('Tidak ada transaksi baru dari kasir');
-            }
-        }
-
-        // Event listener untuk perubahan filter
+        // Event listeners untuk filter
         document.getElementById('date-range').addEventListener('change', function() {
-            const customGroup = document.getElementById('custom-date-group');
-            const customGroupEnd = document.getElementById('custom-date-group-end');
-            
             if (this.value === 'custom') {
-                customGroup.style.display = 'block';
-                customGroupEnd.style.display = 'block';
-                
-                // Set default date (hari ini)
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('start-date').value = today;
-                document.getElementById('end-date').value = today;
+                document.getElementById('custom-date-group').style.display = 'block';
             } else {
-                customGroup.style.display = 'none';
-                customGroupEnd.style.display = 'none';
+                document.getElementById('custom-date-group').style.display = 'none';
+                applyFilters();
             }
-            
-            applyFilters();
         });
         
-        document.getElementById('start-date').addEventListener('change', applyFilters);
-        document.getElementById('end-date').addEventListener('change', applyFilters);
+        document.getElementById('custom-date').addEventListener('change', applyFilters);
         document.getElementById('cashier-filter').addEventListener('change', applyFilters);
+        
+        // Fungsi untuk menerapkan filter
+        function applyFilters() {
+            filterData();
+            renderSummary();
+            renderTransactionsTable();
+            renderSalesChart();
+        }
 
         // Inisialisasi saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
-            // Event listeners
+            // Event listeners untuk tombol
             document.getElementById('reload-btn').addEventListener('click', loadSalesData);
             document.getElementById('export-btn').addEventListener('click', exportToExcel);
-            
-            // Tombol sync (bisa ditambahkan di UI jika diperlukan)
-            // document.getElementById('sync-btn').addEventListener('click', syncFromCashier);
+            document.getElementById('print-btn').addEventListener('click', printReport);
             
             // Muat data awal
             loadSalesData();
-            
-            // Set interval untuk auto-sync setiap 1 menit
-            setInterval(syncFromCashier, 60000);
         });
     </script>
 </body>
