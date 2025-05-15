@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rekap Transaksi TarToast</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #555;
+            font-size: 16px;
+        }
+        .card-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .total-sales { color: #2e7d32; }
+        .total-orders { color: #1565c0; }
+        .avg-order { color: #6a1b9a; }
+        .top-cashier { color: #d84315; }
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .filter-group select, .filter-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #2196f3;
+            color: white;
+        }
+        .btn-refresh {
+            background-color: #4caf50;
+            color: white;
+        }
+        .btn-export {
+            background-color: #ff9800;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        .btn-print {
+            background-color: #9c27b0;
+            color: white;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        .chart-container {
+            margin-top: 30px;
+            height: 300px;
+        }
+        .watermark {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: rgba(0,0,0,0.2);
+            font-size: 12px;
+        }
+        .realtime-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .realtime-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-left: 5px;
+        }
+        .realtime-on {
+            background-color: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 300px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+    <!-- Chart.js untuk grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Rekap Transaksi TarToast</h1>
+        <h3 style="text-align: center;">Pantau Transaksi Secara Real-time</h3>
+        
+        <div class="realtime-toggle">
+            <label>Mode Real-time:</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="realtime-toggle" checked>
+                <span class="slider"></span>
+            </label>
+            <span id="realtime-status">Menyala</span>
+            <span class="realtime-indicator realtime-on" id="realtime-indicator"></span>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Memuat data transaksi...</p>
+        </div>
+        
+        <div class="summary-cards">
+            <div class="card">
+                <h3>Total Penjualan Hari Ini</h3>
+                <div class="card-value total-sales" id="total-sales">Rp 0</div>
+                <div id="sales-change"></div>
+            </div>
+            <div class="card">
+                <h3>Total Order Hari Ini</h3>
+                <div class="card-value total-orders" id="total-orders">0</div>
+                <div id="orders-change"></div>
+            </div>
+            <div class="card">
+                <h3>Rata-rata per Order</h3>
+                <div class="card-value avg-order" id="avg-order">Rp 0</div>
+                <div id="avg-change"></div>
+            </div>
+            <div class="card">
+                <h3>Kasir Teraktif</h3>
+                <div class="card-value top-cashier" id="top-cashier">-</div>
+                <div id="cashier-stats"></div>
+            </div>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label for="date-filter">Tanggal:</label>
+                <input type="date" id="date-filter" value="">
+            </div>
+            <div class="filter-group">
+                <label for="cashier-filter">Kasir:</label>
+                <select id="cashier-filter">
+                    <option value="">Semua Kasir</option>
+                    <option value="Fathu">Fathu</option>
+                    <option value="Aziz">Aziz</option>
+                    <option value="Staf1">Staf1</option>
+                    <option value="Staf2">Staf2</option>
+                </select>
+            </div>
+            <div class="filter-group" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-danger" id="reset-sales-btn">Reset Penjualan</button>
+            </div>
+            <div class="filter-group" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-print" id="print-summary-btn">Cetak Laporan</button>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="sales-chart"></canvas>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-refresh" id="refresh-btn">Segarkan Data</button>
+            <button class="btn btn-export" id="export-btn">Ekspor ke Excel</button>
+        </div>
+    </div>
+    
+    <!-- Modal untuk Reset Penjualan -->
+    <div id="reset-sales-modal" class="modal">
+        <div class="modal-content">
+            <h2>Reset Data Penjualan</h2>
+            <p>Masukkan username dan password admin untuk reset:</p>
+            <div class="form-group">
+                <label for="reset-username">Username:</label>
+                <input type="text" id="reset-username" placeholder="Username">
+            </div>
+            <div class="form-group">
+                <label for="reset-password">Password:</label>
+                <input type="password" id="reset-password" placeholder="Password">
+            </div>
+            <div class="modal-buttons">
+                <button id="cancel-reset-sales">Batal</button>
+                <button class="btn btn-danger" id="confirm-reset-sales">Reset Penjualan</button>
+            </div>
+            <p id="reset-sales-error" style="color: red; display: none;">Username atau password salah!</p>
+        </div>
+    </div>
+    
+    <div class="watermark">Dashboard by FAproduction</div>
+
+    <script>
+        // Konfigurasi
+        const STORAGE_KEY = 'tartoast_transactions';
+        const ADMIN_CREDENTIALS = {
+            username: "owner",
+            password: "tartoast"
+        };
+        
+        // Variabel global
+        let state = {
+            transactions: [],
+            filteredTransactions: [],
+            dailyStats: {},
+            chart: null,
+            realtimeInterval: null,
+            lastUpdate: null
+        };
+        
+        // Elemen DOM
+        const dom = {
+            loading: document.getElementById('loading'),
+            totalSales: document.getElementById('total-sales'),
+            totalOrders: document.getElementById('total-orders'),
+            avgOrder: document.getElementById('avg-order'),
+            topCashier: document.getElementById('top-cashier'),
+            dateFilter: document.getElementById('date-filter'),
+            cashierFilter: document.getElementById('cashier-filter'),
+            refreshBtn: document.getElementById('refresh-btn'),
+            exportBtn: document.getElementById('export-btn'),
+            realtimeToggle: document.getElementById('realtime-toggle'),
+            realtimeStatus: document.getElementById('realtime-status'),
+            realtimeIndicator: document.getElementById('realtime-indicator'),
+            salesChart: document.getElementById('sales-chart'),
+            resetSalesBtn: document.getElementById('reset-sales-btn'),
+            printSummaryBtn: document.getElementById('print-summary-btn')
+        };
+        
+        // Format Rupiah
+        function formatRupiah(amount) {
+            return 'Rp ' + amount.toLocaleString('id-ID');
+        }
+        
+        // Format waktu
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('id-ID');
+        }
+        
+        // Hitung statistik
+        function calculateStats(transactions) {
+            const stats = {
+                totalSales: 0,
+                totalOrders: transactions.length,
+                cashiers: {},
+                hourlySales: Array(24).fill(0)
+            };
+            
+            transactions.forEach(transaction => {
+                stats.totalSales += transaction.total;
+                
+                // Hitung per kasir
+                if (!stats.cashiers[transaction.cashier]) {
+                    stats.cashiers[transaction.cashier] = {
+                        count: 0,
+                        total: 0
+                    };
+                }
+                stats.cashiers[transaction.cashier].count++;
+                stats.cashiers[transaction.cashier].total += transaction.total;
+                
+                // Hitung per jam
+                const hour = new Date(transaction.date).getHours();
+                stats.hourlySales[hour] += transaction.total;
+            });
+            
+            stats.avgOrder = stats.totalOrders > 0 ? stats.totalSales / stats.totalOrders : 0;
+            
+            // Cari kasir teraktif
+            let topCashier = null;
+            let maxOrders = 0;
+            for (const [name, data] of Object.entries(stats.cashiers)) {
+                if (data.count > maxOrders) {
+                    maxOrders = data.count;
+                    topCashier = name;
+                }
+            }
+            
+            stats.topCashier = topCashier;
+            
+            return stats;
+        }
+        
+        // Render statistik
+        function renderStats(stats) {
+            dom.totalSales.textContent = formatRupiah(stats.totalSales);
+            dom.totalOrders.textContent = stats.totalOrders;
+            dom.avgOrder.textContent = formatRupiah(stats.avgOrder);
+            dom.topCashier.textContent = stats.topCashier || '-';
+            
+            // Render perubahan dari pembaruan terakhir
+            if (state.lastUpdate && state.lastUpdate.stats) {
+                const prevStats = state.lastUpdate.stats;
+                
+                const salesChange = stats.totalSales - prevStats.totalSales;
+                const ordersChange = stats.totalOrders - prevStats.totalOrders;
+                const avgChange = stats.avgOrder - prevStats.avgOrder;
+                
+                function renderChange(element, value, isCurrency = false) {
+                    if (value > 0) {
+                        element.innerHTML = `<span style="color: #4CAF50;">+${isCurrency ? formatRupiah(value) : value}</span>`;
+                    } else if (value < 0) {
+                        element.innerHTML = `<span style="color: #F44336;">${isCurrency ? formatRupiah(value) : value}</span>`;
+                    } else {
+                        element.innerHTML = '<span style="color: #9E9E9E;">±0</span>';
+                    }
+                }
+                
+                renderChange(document.getElementById('sales-change'), salesChange, true);
+                renderChange(document.getElementById('orders-change'), ordersChange);
+                renderChange(document.getElementById('avg-change'), avgChange, true);
+            }
+        }
+        
+        // Render grafik penjualan
+        function renderChart(stats) {
+            // Hancurkan chart sebelumnya jika ada
+            if (state.chart) {
+                state.chart.destroy();
+            }
+            
+            const hours = Array.from({length: 24}, (_, i) => `${i}:00`);
+            const salesData = stats.hourlySales;
+            
+            const ctx = dom.salesChart.getContext('2d');
+            state.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Penjualan per Jam',
+                        data: salesData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + value.toLocaleString('id-ID');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Total: Rp ' + context.raw.toLocaleString('id-ID');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Filter transaksi
+        function filterTransactions() {
+            let filtered = [...state.transactions];
+            
+            // Filter tanggal
+            const dateFilter = dom.dateFilter.value;
+            if (dateFilter) {
+                const filterDate = new Date(dateFilter);
+                filtered = filtered.filter(transaction => {
+                    const transDate = new Date(transaction.date);
+                    return transDate.toDateString() === filterDate.toDateString();
+                });
+            }
+            
+            // Filter kasir
+            const cashierFilter = dom.cashierFilter.value;
+            if (cashierFilter) {
+                filtered = filtered.filter(transaction => transaction.cashier === cashierFilter);
+            }
+            
+            state.filteredTransactions = filtered;
+            return filtered;
+        }
+        
+        // Muat data transaksi
+        async function loadTransactions() {
+            showLoading(true);
+            
+            try {
+                // Coba muat dari localStorage terlebih dahulu
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    state.transactions = JSON.parse(savedData);
+                }
+                
+                // Simpan timestamp pembaruan terakhir
+                state.lastUpdate = {
+                    time: new Date(),
+                    stats: state.transactions.length > 0 ? calculateStats(state.transactions) : null
+                };
+                
+                // Filter dan render data
+                const filtered = filterTransactions();
+                const stats = calculateStats(filtered);
+                
+                renderStats(stats);
+                renderChart(stats);
+                
+                // Set tanggal filter default ke hari ini
+                const today = new Date().toISOString().split('T')[0];
+                dom.dateFilter.value = today;
+                
+                // Aktifkan indikator real-time
+                updateRealtimeIndicator(true);
+                
+            } catch (error) {
+                console.error('Gagal memuat data:', error);
+                alert('Gagal memuat data transaksi');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Perbarui data transaksi
+        async function refreshData() {
+            showLoading(true);
+            
+            try {
+                // Simpan data sebelumnya untuk perbandingan
+                const prevData = [...state.transactions];
+                
+                // Coba muat dari localStorage (simulasi pembaruan data)
+                const savedData = localStorage.getItem('dailyOrders');
+                if (savedData) {
+                    const dailyOrders = JSON.parse(savedData);
+                    
+                    // Gabungkan dengan data yang ada, hindari duplikat
+                    dailyOrders.forEach(newOrder => {
+                        const exists = state.transactions.some(
+                            order => order.number === newOrder.number && order.date === newOrder.date
+                        );
+                        if (!exists) {
+                            state.transactions.push(newOrder);
+                        }
+                    });
+                    
+                    // Simpan ke storage khusus rekap
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.transactions));
+                }
+                
+                // Simpan timestamp pembaruan terakhir
+                state.lastUpdate = {
+                    time: new Date(),
+                    stats: calculateStats(prevData)
+                };
+                
+                // Filter dan render data
+                const filtered = filterTransactions();
+                const stats = calculateStats(filtered);
+                
+                renderStats(stats);
+                renderChart(stats);
+                
+                // Perbarui indikator real-time
+                updateRealtimeIndicator(true);
+                
+            } catch (error) {
+                console.error('Gagal memperbarui data:', error);
+                updateRealtimeIndicator(false);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Ekspor ke Excel
+        function exportToExcel() {
+            if (state.filteredTransactions.length === 0) {
+                alert('Tidak ada data untuk diekspor');
+                return;
+            }
+            
+            let csvContent = "No. Order,Tanggal,Waktu,Kasir,Item,Quantity,Harga Satuan,Total\n";
+            
+            state.filteredTransactions.forEach(transaction => {
+                const date = new Date(transaction.date);
+                const dateStr = date.toLocaleDateString('id-ID');
+                const timeStr = date.toLocaleTimeString('id-ID');
+                
+                transaction.items.forEach(item => {
+                    csvContent += `"${transaction.number}","${dateStr}","${timeStr}","${transaction.cashier}",` +
+                                 `"${item.name}",${item.quantity},${item.price},${item.price * item.quantity}\n`;
+                });
+                
+                // Tambahkan baris total
+                csvContent += `"${transaction.number}","${dateStr}","${timeStr}","${transaction.cashier}",` +
+                             `"TOTAL",,,${transaction.total}\n`;
+            });
+            
+            // Hitung grand total
+            const grandTotal = state.filteredTransactions.reduce((sum, t) => sum + t.total, 0);
+            csvContent += `,,,,,,Total Keseluruhan,${grandTotal}\n`;
+            
+            // Buat blob dan unduh
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `rekap_tartoast_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Toggle real-time
+        function toggleRealtime() {
+            const isRealtime = dom.realtimeToggle.checked;
+            
+            if (isRealtime) {
+                // Mulai pembaruan real-time setiap 10 detik
+                state.realtimeInterval = setInterval(refreshData, 10000);
+                dom.realtimeStatus.textContent = 'Menyala';
+                updateRealtimeIndicator(true);
+            } else {
+                // Hentikan pembaruan real-time
+                if (state.realtimeInterval) {
+                    clearInterval(state.realtimeInterval);
+                    state.realtimeInterval = null;
+                }
+                dom.realtimeStatus.textContent = 'Mati';
+                updateRealtimeIndicator(false);
+            }
+        }
+        
+        // Perbarui indikator real-time
+        function updateRealtimeIndicator(active) {
+            dom.realtimeIndicator.classList.toggle('realtime-on', active);
+        }
+        
+        // Reset penjualan
+        function resetSalesData() {
+            document.getElementById('reset-sales-modal').style.display = 'flex';
+            document.getElementById('reset-username').value = '';
+            document.getElementById('reset-password').value = '';
+            document.getElementById('reset-sales-error').style.display = 'none';
+        }
+        
+        // Konfirmasi reset penjualan
+        function confirmResetSales() {
+            const username = document.getElementById('reset-username').value;
+            const password = document.getElementById('reset-password').value;
+            
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                // Reset data di localStorage
+                localStorage.removeItem('dailyOrders');
+                localStorage.removeItem('currentOrder');
+                localStorage.removeItem(STORAGE_KEY);
+                
+                // Reset state aplikasi
+                state.transactions = [];
+                state.filteredTransactions = [];
+                state.dailyStats = {};
+                
+                // Update tampilan
+                renderStats(calculateStats([]));
+                if (state.chart) {
+                    state.chart.destroy();
+                    renderChart(calculateStats([]));
+                }
+                
+                // Tutup modal
+                document.getElementById('reset-sales-modal').style.display = 'none';
+                
+                // Tampilkan notifikasi
+                alert('Data penjualan telah direset ke 0');
+            } else {
+                document.getElementById('reset-sales-error').style.display = 'block';
+            }
+        }
+        
+        // Cetak laporan
+        function printSummaryReport() {
+            const dateFilter = dom.dateFilter.value;
+            const cashierFilter = dom.cashierFilter.value;
+            const now = new Date();
+            
+            let reportContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Laporan Penjualan TarToast</title>
+                    <style>
+                        body { font-family: Arial; margin: 0; padding: 10px; }
+                        .report { width: 100%; max-width: 800px; margin: 0 auto; }
+                        .header { text-align: center; margin-bottom: 20px; }
+                        .title { font-size: 24px; font-weight: bold; }
+                        .subtitle { font-size: 16px; color: #555; }
+                        .divider { border-top: 1px solid #000; margin: 10px 0; }
+                        .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+                        .summary-item { border: 1px solid #ddd; padding: 10px; text-align: center; }
+                        .summary-title { font-size: 14px; color: #555; }
+                        .summary-value { font-size: 18px; font-weight: bold; margin: 5px 0; }
+                        .chart-placeholder { height: 300px; background-color: #f5f5f5; display: flex; align-items: center; justify-content: center; margin: 20px 0; }
+                        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #777; }
+                    </style>
+                </head>
+                <body>
+                    <div class="report">
+                        <div class="header">
+                            <div class="title">LAPORAN PENJUALAN TARTOAST</div>
+                            <div class="subtitle">
+                                ${dateFilter ? 'Tanggal: ' + new Date(dateFilter).toLocaleDateString('id-ID') : 'Semua Tanggal'} | 
+                                ${cashierFilter ? 'Kasir: ' + cashierFilter : 'Semua Kasir'}
+                            </div>
+                            <div class="subtitle">Dicetak pada: ${now.toLocaleString('id-ID')}</div>
+                        </div>
+                        <div class="divider"></div>
+                        
+                        <div class="summary">
+                            <div class="summary-item">
+                                <div class="summary-title">Total Penjualan</div>
+                                <div class="summary-value total-sales">${dom.totalSales.textContent}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-title">Total Order</div>
+                                <div class="summary-value total-orders">${dom.totalOrders.textContent}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-title">Rata-rata per Order</div>
+                                <div class="summary-value avg-order">${dom.avgOrder.textContent}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-title">Kasir Teraktif</div>
+                                <div class="summary-value top-cashier">${dom.topCashier.textContent}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-placeholder">
+                            <p>Grafik Penjualan per Jam</p>
+                        </div>
+                        
+                        <div class="footer">
+                            Laporan ini dicetak secara otomatis dari sistem kasir TarToast
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.open();
+            printWindow.document.write(reportContent);
+            printWindow.document.close();
+            
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        }
+        
+        // Tampilkan loading
+        function showLoading(show) {
+            dom.loading.style.display = show ? 'block' : 'none';
+        }
+        
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', () => {
+            // Event listeners
+            dom.refreshBtn.addEventListener('click', refreshData);
+            dom.exportBtn.addEventListener('click', exportToExcel);
+            dom.realtimeToggle.addEventListener('change', toggleRealtime);
+            dom.resetSalesBtn.addEventListener('click', resetSalesData);
+            dom.printSummaryBtn.addEventListener('click', printSummaryReport);
+            
+            // Modal reset
+            document.getElementById('cancel-reset-sales').addEventListener('click', () => {
+                document.getElementById('reset-sales-modal').style.display = 'none';
+            });
+            document.getElementById('confirm-reset-sales').addEventListener('click', confirmResetSales);
+            
+            // Filter
+            dom.dateFilter.addEventListener('change', () => {
+                const filtered = filterTransactions();
+                const stats = calculateStats(filtered);
+                renderStats(stats);
+                renderChart(stats);
+            });
+            
+            dom.cashierFilter.addEventListener('change', () => {
+                const filtered = filterTransactions();
+                const stats = calculateStats(filtered);
+                renderStats(stats);
+                renderChart(stats);
+            });
+            
+            // Setel toggle real-time ke on secara default
+            dom.realtimeToggle.checked = true;
+            toggleRealtime();
+            
+            // Muat data awal
+            loadTransactions();
+        });
+    </script>
+</body>
+</html>
