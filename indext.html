@@ -808,54 +808,26 @@
         }
 
         // Fungsi untuk proses lengkap: simpan, cetak, hapus
-       function completeOrderProcess() {
-    // 1. Simpan order
-    const order = saveOrder();
-    if (!order) return false;
-    
-    // 2. Cetak struk
-    printReceipt(order);
-    
-    // 3. [TAMBAHKAN KODE INI] Simpan ke Google Sheets (Penjualan)
-    try {
-        const SALES_SHEET_NAME = 'Penjualan'; // Tambahkan ini di bagian konstanta di atas
-        const salesUrl = `https://sheets.googleapis.com/v4/spreadsheets/${MENU_SHEET_ID}/values/${SALES_SHEET_NAME}:append?valueInputOption=USER_ENTERED&key=${API_KEY}`;
-        
-        const salesData = [
-            order.number,
-            new Date().toISOString(),
-            order.cashier,
-            JSON.stringify(order.items),
-            order.total
-        ];
-        
-        // Gunakan fetch dengan await (pastikan fungsi sudah async)
-        await fetch(salesUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                values: [salesData]
-            })
-        });
-    } catch (error) {
-        console.error('Gagal menyimpan ke sheet Penjualan:', error);
-        // Tidak perlu alert agar tidak mengganggu alur kasir
-    }
-    
-    // 4. Hapus pesanan
-    clearOrder();
-    
-    // Simpan perubahan ke local Storage
-    localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
-    localStorage.removeItem('currentOrder');
-    
-    // Tampilkan notifikasi
-    alert(`Order #${order.number} telah disimpan dan dicetak!\nTotal: Rp ${order.total.toLocaleString('id-ID')}`);
-    
-    return true;
-}
+        function completeOrderProcess() {
+            // 1. Simpan order
+            const order = saveOrder();
+            if (!order) return false;
+            
+            // 2. Cetak struk
+            printReceipt(order);
+            
+            // 3. Hapus pesanan
+            clearOrder();
+            
+            // Simpan perubahan ke local Storage
+            localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
+            localStorage.removeItem('currentOrder');
+            
+            // Tampilkan notifikasi
+            alert(`Order #${order.number} telah disimpan dan dicetak!\nTotal: Rp ${order.total.toLocaleString('id-ID')}`);
+            
+            return true;
+        }
 
         // Inisialisasi saat halaman dimuat
         document.addEventListener('DOMContentLoaded', () => {
