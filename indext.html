@@ -267,7 +267,13 @@
             <h2>Informasi Kasir</h2>
             <div class="form-group">
                 <label for="cashier-name">Nama Kasir:</label>
-                <input type="text" id="cashier-name" placeholder="Nama kasir yang bertugas (wajib di isi)" required>
+                <select id="cashier-name" required>
+                    <option value="">Pilih Kasir</option>
+                    <option value="Fathu">Fathu</option>
+                    <option value="Aziz">Aziz</option>
+                    <option value="Staf1">Staf1</option>
+                    <option value="Staf2">Staf2</option>
+                </select>
             </div>
         </div>
         
@@ -441,10 +447,10 @@
 
         // Fungsi untuk simpan order
         function saveOrder() {
-            const cashierName = document.getElementById('cashier-name').value.trim();
+            const cashierName = document.getElementById('cashier-name').value;
             
             if (!cashierName) {
-                alert('Harap masukkan nama kasir (wajib di isi)');
+                alert('Harap pilih nama kasir (wajib di isi)');
                 return false;
             }
             
@@ -482,7 +488,7 @@
 
         // Fungsi untuk cetak struk
         function printReceipt(order) {
-            const cashierName = order.cashier || document.getElementById('cashier-name').value.trim() || '-';
+            const cashierName = order.cashier || document.getElementById('cashier-name').value || '-';
             const now = new Date(order.date) || new Date();
             const total = order.total;
             
