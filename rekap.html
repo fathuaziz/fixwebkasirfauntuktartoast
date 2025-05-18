@@ -23,10 +23,32 @@
       margin-bottom: 10px;
       font-size: 1.2em;
     }
+    .refresh-btn {
+      display: block;
+      margin: 0 auto;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .refresh-btn:hover {
+      background-color: #45a049;
+    }
+    .header-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
-  <h2 style="text-align:center;">Data Pembelian Tartoast (Dari sheet)</h2>
+  <div class="header-container">
+    <h2>Data Pembelian Tartoast (Dari sheet)</h2>
+    <button class="refresh-btn" onclick="refreshPage()">Refresh Data</button>
+  </div>
+  
   <div id="loading" style="text-align:center;">Memuat data...</div>
   <div id="table-container"></div>
 
@@ -79,6 +101,17 @@
       document.getElementById('table-container').innerHTML = html;
     }
 
+    function refreshPage() {
+      // Tampilkan kembali loading indicator
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('loading').innerText = 'Memuat data...';
+      document.getElementById('table-container').innerHTML = '';
+      
+      // Fetch data lagi
+      fetchData();
+    }
+
+    // Panggil fetchData saat halaman pertama kali dimuat
     fetchData();
   </script>
 </body>
