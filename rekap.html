@@ -1,213 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Transaksi Realtime</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    <style>
-        body {
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .card {
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .card-header {
-            font-weight: bold;
-            background-color: #0d6efd;
-            color: white;
-        }
-        .refresh-btn {
-            margin-bottom: 15px;
-        }
-        .summary-card {
-            text-align: center;
-        }
-        .summary-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #0d6efd;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Data dari Google Sheets</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    caption {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.2em;
+    }
+  </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <h2 class="mb-4">Dashboard Transaksi Realtime</h2>
-        
-        <!-- Summary Cards -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card summary-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Transaksi</h5>
-                        <div class="summary-value" id="total-transactions">0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card summary-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Pendapatan</h5>
-                        <div class="summary-value" id="total-income">Rp 0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card summary-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Transaksi Hari Ini</h5>
-                        <div class="summary-value" id="today-transactions">0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <button id="refresh-btn" class="btn btn-primary refresh-btn">
-            <i class="bi bi-arrow-clockwise"></i> Refresh Data
-        </button>
-        
-        <div class="card">
-            <div class="card-header">
-                Daftar Transaksi
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table id="transactions-table" class="table table-striped" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Waktu</th>
-                                <th>Tanggal</th>
-                                <th>No. Transaksi</th>
-                                <th>Pelanggan</th>
-                                <th>Kasir</th>
-                                <th>Pesanan</th>
-                                <th>Total</th>
-                                <th>Kembali</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactions-body">
-                            <!-- Data akan diisi oleh JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+  <h2 style="text-align:center;">Data Transaksi dari Google Sheets</h2>
+  <div id="loading" style="text-align:center;">Memuat data...</div>
+  <div id="table-container"></div>
 
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    
-    <script>
-        // URL Apps Script Web App (ganti dengan URL deploy Anda)
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypLgl92sfguQ1hh5DBEsBy6mSSwAElegtgqY-Jvk8r1z4tYUJBTlnqMFECj1uSxNjcGw/exec";
-        
-        // Format angka ke Rupiah
-        function formatRupiah(angka) {
-            return new Intl.NumberFormat('id-ID', { 
-                style: 'currency', 
-                currency: 'IDR',
-                minimumFractionDigits: 0
-            }).format(angka);
+  <script>
+    const url = "https://script.google.com/macros/s/AKfycbyGrWGIsbm1-sihqZVTtCefgC-Q3t3eWTAlCn_FvJx3zx8Jf-WuUDQmlPOamZb2KH7gpw/exec"; // Ganti dengan URL Web App yang sudah kamu deploy
+
+    async function fetchData() {
+      try {
+        const response = await fetch(url);
+        const json = await response.json();
+
+        const loadingEl = document.getElementById('loading');
+        loadingEl.style.display = 'none';
+
+        if (json.status === 'success' && Array.isArray(json.data)) {
+          renderTable(json.data);
+        } else {
+          document.getElementById('table-container').innerText = 'Gagal memuat data: ' + (json.message || 'Tidak ada data');
         }
-        
-        // Format tanggal
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            const options = { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            };
-            return new Date(dateString).toLocaleDateString('id-ID', options);
-        }
-        
-        // Ambil data dari Google Sheets
-        function fetchData() {
-            $.ajax({
-                url: SCRIPT_URL,
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data.error) {
-                        alert(data.error);
-                        return;
-                    }
-                    
-                    // Hitung summary
-                    const today = new Date().toISOString().split('T')[0];
-                    let totalIncome = 0;
-                    let todayTransactions = 0;
-                    
-                    // Kosongkan tabel
-                    $('#transactions-body').empty();
-                    
-                    // Isi data ke tabel
-                    data.forEach((item, index) => {
-                        // Hitung summary
-                        totalIncome += item.total || 0;
-                        
-                        const transDate = item.tanggal || '';
-                        if (transDate.includes(today)) {
-                            todayTransactions++;
-                        }
-                        
-                        // Tambahkan baris ke tabel
-                        $('#transactions-body').append(`
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${formatDate(item.timestamp)}</td>
-                                <td>${item.tanggal || '-'}</td>
-                                <td>${item.transaksi || '-'}</td>
-                                <td>${item.nama_pelanggan || '-'}</td>
-                                <td>${item.nama_kasir || '-'}</td>
-                                <td>${item.menu || '-'}</td>
-                                <td>${formatRupiah(item.total || 0)}</td>
-                                <td>${formatRupiah(item.kembali || 0)}</td>
-                            </tr>
-                        `);
-                    });
-                    
-                    // Update summary
-                    $('#total-transactions').text(data.length);
-                    $('#total-income').text(formatRupiah(totalIncome));
-                    $('#today-transactions').text(todayTransactions);
-                    
-                    // Inisialisasi DataTable jika belum
-                    if (!$.fn.DataTable.isDataTable('#transactions-table')) {
-                        $('#transactions-table').DataTable({
-                            order: [[1, 'desc']], // Urutkan berdasarkan waktu terbaru
-                            responsive: true
-                        });
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error fetching data:", error);
-                    alert("Gagal mengambil data: " + error);
-                }
-            });
-        }
-        
-        // Refresh data manual
-        $('#refresh-btn').click(function() {
-            fetchData();
+      } catch (err) {
+        document.getElementById('loading').innerText = 'Error memuat data: ' + err.message;
+      }
+    }
+
+    function renderTable(data) {
+      if (data.length === 0) {
+        document.getElementById('table-container').innerText = 'Data kosong.';
+        return;
+      }
+
+      // Buat header tabel dari key object pertama
+      const headers = Object.keys(data[0]);
+      let html = '<table><caption>Daftar Transaksi</caption><thead><tr>';
+
+      headers.forEach(h => {
+        html += `<th>${h}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      data.forEach(row => {
+        html += '<tr>';
+        headers.forEach(h => {
+          html += `<td>${row[h]}</td>`;
         });
-        
-        // Muat data pertama kali
-        $(document).ready(function() {
-            fetchData();
-            
-            // Auto-refresh setiap 30 detik
-            setInterval(fetchData, 30000);
-        });
-    </script>
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+
+      document.getElementById('table-container').innerHTML = html;
+    }
+
+    fetchData();
+  </script>
 </body>
 </html>
