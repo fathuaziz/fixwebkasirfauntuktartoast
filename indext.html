@@ -161,35 +161,13 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 9999;
       justify-content: center;
       align-items: center;
-    }
-
-    #loading div {
-      background: #fff;
-      padding: 25px 40px;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 500;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      text-align: center;
-    }
-
-    .spinner {
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      border-radius: 50%;
-      border-top: 4px solid var(--accent-color);
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 15px auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
     }
 
     /* Password modal styles */
@@ -241,6 +219,16 @@
 
     #passwordModal .close-btn:hover {
       background-color: #c0392b;
+    }
+
+    /* Rekap button style */
+    #rekapBtn {
+      background-color: #4CAF50;
+      margin: 20px 0;
+    }
+
+    #rekapBtn:hover {
+      background-color: #ff0400;
     }
 
     /* Responsive adjustments */
@@ -361,22 +349,19 @@
       </div>
 
       <button type="submit">Simpan dan Proses Transaksi</button>
-      
-      <!-- New button to access rekap.html -->
-      <button type="button" id="rekapBtn" style="background-color: #4CAF50; margin-top: 20px;">Akses Laporan Rekap</button>
 
       <div class="receipt-preview">
         <h3>Preview Struk</h3>
         <div id="receipt-content"></div>
       </div>
+
+      <!-- Rekap Data Button -->
+      <button type="button" id="rekapBtn" onclick="showPasswordModal()">Akses Rekap Data</button>
     </form>
   </div>
 
   <div id="loading">
-    <div>
-      <p>Menyimpan transaksi...</p>
-      <div class="spinner"></div>
-    </div>
+    Memproses transaksi...
   </div>
 
   <!-- Password Modal -->
@@ -414,11 +399,6 @@
       
       document.getElementById("nama_pelanggan").addEventListener("input", updateReceiptPreview);
       document.getElementById("nama_kasir").addEventListener("change", updateReceiptPreview);
-      
-      // Add event listener for rekap button
-      document.getElementById("rekapBtn").addEventListener("click", function() {
-        document.getElementById("passwordModal").style.display = "flex";
-      });
     });
 
     function addMenu() {
@@ -540,6 +520,10 @@
     }
 
     // Password functions
+    function showPasswordModal() {
+      document.getElementById("passwordModal").style.display = "flex";
+    }
+
     function checkPassword() {
       const password = document.getElementById("passwordInput").value;
       if (password === "tartoast") {
