@@ -131,7 +131,7 @@
     }
 
     .add-menu-btn {
-      background-color: var(--primary-color);
+      background-color: #2bff00;
       margin-bottom: 20px;
     }
 
@@ -151,6 +151,7 @@
       border-radius: 8px;
       font-family: 'Courier New', monospace;
       white-space: pre-line;
+      position: relative;
     }
 
     #loading {
@@ -189,6 +190,57 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    /* Password modal styles */
+    #passwordModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #passwordModal div {
+      background: #fff;
+      padding: 25px 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    #passwordModal h3 {
+      color: var(--accent-color);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #passwordModal input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    #passwordModal button {
+      margin-top: 0;
+    }
+
+    #passwordModal .close-btn {
+      background-color: var(--error-color);
+      margin-top: 10px;
+    }
+
+    #passwordModal .close-btn:hover {
+      background-color: #c0392b;
     }
 
     /* Responsive adjustments */
@@ -309,6 +361,9 @@
       </div>
 
       <button type="submit">Simpan dan Proses Transaksi</button>
+      
+      <!-- New button to access rekap.html -->
+      <button type="button" id="rekapBtn" style="background-color: #4CAF50; margin-top: 20px;">Akses Laporan Rekap</button>
 
       <div class="receipt-preview">
         <h3>Preview Struk</h3>
@@ -321,6 +376,16 @@
     <div>
       <p>Menyimpan transaksi...</p>
       <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- Password Modal -->
+  <div id="passwordModal">
+    <div>
+      <h3>Masukkan Password</h3>
+      <input type="password" id="passwordInput" placeholder="Masukkan password">
+      <button type="button" onclick="checkPassword()">Masuk</button>
+      <button type="button" class="close-btn" onclick="closePasswordModal()">Tutup</button>
     </div>
   </div>
 
@@ -349,6 +414,11 @@
       
       document.getElementById("nama_pelanggan").addEventListener("input", updateReceiptPreview);
       document.getElementById("nama_kasir").addEventListener("change", updateReceiptPreview);
+      
+      // Add event listener for rekap button
+      document.getElementById("rekapBtn").addEventListener("click", function() {
+        document.getElementById("passwordModal").style.display = "flex";
+      });
     });
 
     function addMenu() {
@@ -428,6 +498,7 @@
       
       // Add menu items
       let total = 0;
+      let itemCount = 1;
       document.querySelectorAll("#menu-container .input-group").forEach(group => {
         const select = group.querySelector(".menu-select");
         const menuName = select.value || "[Menu]";
@@ -436,9 +507,10 @@
         const subtotal = harga * jumlah;
         
         if (menuName && jumlah > 0) {
-          receiptText += `${menuName.padEnd(20, ' ')} ${jumlah}x Rp ${formatRupiah(harga)}\n`;
+          receiptText += `${itemCount}. ${menuName.padEnd(18, ' ')} ${jumlah}x Rp ${formatRupiah(harga)}\n`;
           receiptText += `                    Rp ${formatRupiah(subtotal)}\n`;
           total += subtotal;
+          itemCount++;
         }
       });
       
@@ -465,6 +537,22 @@
 
     function hideLoading() {
       document.getElementById("loading").style.display = "none";
+    }
+
+    // Password functions
+    function checkPassword() {
+      const password = document.getElementById("passwordInput").value;
+      if (password === "tartoast") {
+        window.location.href = "https://fathuaziz.github.io/fixwebkasirfauntuktartoast/rekap.html";
+      } else {
+        alert("Password salah! Silakan coba lagi.");
+        document.getElementById("passwordInput").value = "";
+      }
+    }
+
+    function closePasswordModal() {
+      document.getElementById("passwordModal").style.display = "none";
+      document.getElementById("passwordInput").value = "";
     }
 
     document.getElementById("kasirForm").addEventListener("submit", function (e) {
