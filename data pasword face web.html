@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>KASIR TARTOAST</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Background gradasi */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ffe6e6, #fff5f5);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Container utama */
+    #form-container {
+      background-color: #fff;
+      padding: 30px 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 380px;
+    }
+
+    /* Judul */
+    h2 {
+      text-align: center;
+      color: #dc3545;
+      margin-bottom: 25px;
+    }
+
+    /* Label dan input */
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    select, input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 18px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    /* Tombol login */
+    input[type="submit"] {
+      width: 100%;
+      background-color: #dc3545;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #c82333;
+    }
+
+    /* Notice box */
+    .notice {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #721c24;
+      background-color: #f8d7da;
+      padding: 12px;
+      border-left: 5px solid #dc3545;
+      border-radius: 6px;
+    }
+
+    .notice strong {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="form-container">
+    <h2>KASIR TARTOAST</h2>
+    <form id="loginForm" action="https://script.google.com/macros/s/AKfycbziCB7NiCkoNQ_Jo6cQdxujvKFJ9qlh2Cw3Wv7NQzyG6wju4WvBSLQ2DiZ8cSyR_KBp/exec" method="post">
+      <label for="username">Pilih Username</label>
+      <select id="username" name="username" required>
+        <option value="">-- Pilih User --</option>
+        <option value="femi">femi</option>
+        <option value="arkan">arkan</option>
+        <option value="denias">denias</option>
+        <option value="salman">salman</option>
+        <option value="fathu">fathu</option>
+        <option value="zen">zen</option>
+      </select>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+
+      <input type="submit" value="LOGIN">
+
+      <div class="notice">
+        <strong>PERHATIAN:</strong>
+        Wajib isi sesuai nama karena data akan masuk ke dalam rekap server.
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      const regularUsers = ["femi", "arkan", "denias"];
+      const adminUsers = ["salman", "fathu", "zen"];
+
+      const isRegularValid = regularUsers.includes(username) && password === "tartoast";
+      const isAdminValid = adminUsers.includes(username) && password === "owner";
+
+      if (!(isRegularValid || isAdminValid)) {
+        alert("Login gagal. Silakan periksa username dan password Anda.");
+        return;
+      }
+
+      this.submit();
+    });
+  </script>
+</body>
+</html>
