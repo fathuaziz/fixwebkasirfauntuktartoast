@@ -1,858 +1,313 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir TarToast</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            position: relative;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .menu-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .menu-controls button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-add {
-            background-color: #4caf50;
-            color: white;
-        }
-        .order-list {
-            margin-top: 20px;
-        }
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .order-item:last-child {
-            border-bottom: none;
-        }
-        .order-info {
-            flex-grow: 1;
-        }
-        .order-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .btn-remove {
-            padding: 5px 10px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .total-section {
-            font-size: 1.2em;
-            font-weight: bold;
-            text-align: right;
-            margin-top: 20px;
-            padding-top: 10px;
-            border-top: 2px solid #333;
-        }
-        .buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-send {
-            background-color: #4caf50;
-            color: white;
-        }
-        .btn-clear {
-            background-color: #f44336;
-            color: white;
-        }
-        .btn-reload {
-            background-color: #2196f3;
-            color: white;
-        }
-        .btn-print {
-            background-color: #9c27b0;
-            color: white;
-        }
-        .btn-reset {
-            background-color: #ff5722;
-            color: white;
-        }
-        .btn-reprint {
-            background-color: #607d8b;
-            color: white;
-        }
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top: 4px solid #3498db;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        #empty-order {
-            text-align: center;
-            color: #888;
-            font-style: italic;
-        }
-        .order-history {
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .order-history-item {
-            padding: 8px;
-            border-bottom: 1px solid #1eff00;
-            position: relative;
-        }
-        .order-history-item:last-child {
-            border-bottom: none;
-        }
-        .current-order {
-            background-color:#fcba03;
-            border-left: 4px solid #2196f3;
-        }
-        .grand-total {
-            background-color: #e3f2fd;
-            font-weight: bold;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            width: 300px;
-        }
-        .modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 20px;
-            gap: 10px;
-        }
-        .watermark {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            color: rgba(0,0,0,0.2);
-            font-size: 12px;
-            z-index: 100;
-        }
-        .reprint-btn {
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            background-color: #607d8b;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            padding: 3px 6px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+  <title>Input Transaksi Kasir</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #form-container {
+      width: 500px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+    }
+
+    .form-group input,
+.form-group select {
+  -webkit-appearance: menulist; /* Mengembalikan tampilan default di WebKit */
+  -moz-appearance: menulist; /* Mengembalikan tampilan default di Firefox */
+  appearance: menulist; /* Standar */
+  padding-right: 25px; /* Beri ruang untuk arrow dropdown */
+  background-image: none; /* Hapus custom arrow jika ada */
+}
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      margin-bottom: 10px;
+    }
+
+    .input-group .form-group {
+      flex: 1;
+    }
+
+    .remove-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      height: 38px;
+      margin-bottom: 20px;
+    }
+
+    .remove-btn:hover {
+      background-color: #c0392b;
+    }
+
+    button {
+      width: 100%;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .receipt-preview {
+      margin-top: 20px;
+      border-top: 1px dashed #ccc;
+      padding-top: 15px;
+    }
+
+    #loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #loading div {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 8px;
+      font-size: 18px;
+    }
+
+    @media (max-width: 600px) {
+      #form-container {
+        width: 90%;
+      }
+
+      .input-group {
+        flex-direction: column;
+      }
+
+      .remove-btn {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Kasir TarToast</h1>
-               
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Memproses data sheet...</p>
+  <div id="form-container">
+    <h2>Transaksi Kasir</h2>
+    <form id="kasirForm">
+      <div class="form-group">
+        <label for="nama_pelanggan">Nama Pelanggan</label>
+        <input type="text" id="nama_pelanggan" name="nama_pelanggan" required>
+      </div>
+
+  <div class="form-group">
+    <label for="nama_kasir">Nama Kasir</label>
+    <select id="nama_kasir" name="nama_kasir" required>
+      <option value="">-- Pilih Kasir --</option>
+      <option value="fathu">Fathu</option>
+      <option value="aziz">Aziz</option>
+      <option value="wibawa">Wibawa</option>
+      <option value="mbuh">Mbuh</option>
+    </select>
+  </div>
+
+      <label>Menu Pesanan</label>
+      <div id="menu-container"></div>
+      <button type="button" onclick="addMenu()">+ Tambah Menu</button>
+
+      <div class="form-group">
+        <label for="total">Total Harga</label>
+        <input type="text" id="total" name="total" readonly>
+      </div>
+
+      <div class="input-group">
+        <div class="form-group">
+          <label for="bayar">Bayar</label>
+          <input type="number" id="bayar" name="bayar" min="0" required>
         </div>
-        
-        <div class="section">
-            <h2>Pesanan</h2>
-            <div class="form-group">
-                <label for="menu-select">Pilih Menu:</label>
-                <select id="menu-select">
-                    <option value="">Pilih Menu</option>
-                </select>
-            </div>
-            
-            <div class="menu-controls">
-                <button class="btn-add" id="add-btn" title="Klik untuk menambah pesanan, tekan Ctrl+Klik untuk reload">+ Tambah Pesanan</button>
-            </div>
-            
-            <div id="order-list" class="order-list">
-                <p id="empty-order">Belum ada pesanan</p>
-            </div>
-            <div class="total-section">
-                Total: Rp <span id="total-amount">0</span>
-            </div>
+        <div class="form-group">
+          <label for="kembali">Kembalian</label>
+          <input type="text" id="kembali" name="kembali" readonly>
         </div>
-        
-        <div class="section">
-            <h2>Informasi Kasir</h2>
-            <div class="form-group">
-                <label for="cashier-name">Nama Kasir:</label>
-                <select id="cashier-name" required>
+      </div>
 
+      <button type="submit">Simpan Transaksi</button>
 
+      <div class="receipt-preview">
+        <h3>Struk</h3>
+        <div id="receipt-content"></div>
+      </div>
+    </form>
+  </div>
 
+  <div id="loading">
+    <div>Menyimpan transaksi...</div>
+  </div>
 
+  <script>
+    const menuList = [
+      { nama: "Roti Bakar Keju", harga: 10000 },
+      { nama: "Roti Bakar Coklat", harga: 15000 }
+    ];
 
+    document.getElementById("bayar").addEventListener("input", calculateChange);
 
-
-
-
-
-
-
-
-
-
-
-                    
-                    <option value="">Pilih Kasir</option>
-                    <option value="Fathu">Fathu</option>
-                    <option value="Aziz">Aziz</option>
-                    <option value="Staf1">Staf1</option>
-                    <option value="Staf2">Staf2</option>
-
-
-
-
-
-
-
-
-                </select>
-            </div>
+    function addMenu() {
+      const container = document.getElementById("menu-container");
+      const div = document.createElement("div");
+      div.className = "input-group";
+      div.innerHTML = `
+        <div class="form-group">
+          <select class="menu-select" required>
+            <option value="">-- Pilih Menu --</option>
+            ${menuList.map(menu => `<option value="${menu.nama}" data-harga="${menu.harga}">${menu.nama}</option>`).join('')}
+          </select>
         </div>
-        
-        <div class="section">
-            <h2>Total Orderan Hari Ini</h2>
-            <div id="order-history" class="order-history">
-                <p id="empty-history">Belum ada transaksi hari ini</p>
-            </div>
+        <div class="form-group">
+          <input type="number" class="menu-jumlah" placeholder="Jumlah" min="1" required>
         </div>
-        
-        <div class="buttons">
-            <button class="btn-reload" id="reload-btn">Reload Halaman</button>
-            <div class="action-buttons">
-                <button class="btn-reset" id="reset-btn">Reset Hari Ini</button>
-                <button class="btn-reprint" id="reprint-btn">Cetak Ulang</button>
-                <button class="btn-print" id="print-btn">Simpan & Cetak Struk</button>
-            </div>
-        </div>
-    </div>
-    <h5 style="text-align: center;">Web kasir by FA production</h5>
+        <button type="button" class="remove-btn" onclick="removeMenu(this)">Batal</button>
+      `;
+      container.appendChild(div);
 
-    <!-- Modal untuk Reset -->
-    <div id="reset-modal" class="modal">
-        <div class="modal-content">
-            <h2>Reset Data Harian</h2>
-            <p>Masukkan username dan password untuk reset:</p>
-            <div class="form-group">
-                <label for="reset-username">Username:</label>
-                <input type="text" id="reset-username" placeholder="Username">
-            </div>
-            <div class="form-group">
-                <label for="reset-password">Password:</label>
-                <input type="password" id="reset-password" placeholder="Password">
-            </div>
-            <div class="modal-buttons">
-                <button id="cancel-reset">Batal</button>
-                <button class="btn-reset" id="confirm-reset">Reset</button>
-            </div>
-            <p id="reset-error" style="color: red; display: none;">Username atau password salah!</p>
-        </div>
-    </div>
+      div.querySelectorAll("select, input").forEach(el => {
+        el.addEventListener("input", calculateTotal);
+      });
+    }
 
-    <!-- Modal untuk Cetak Ulang -->
-    <div id="reprint-modal" class="modal">
-        <div class="modal-content">
-            <h2>Cetak Ulang Struk</h2>
-            <p>Pilih order yang akan dicetak ulang:</p>
-            <div id="reprint-options" style="max-height: 300px; overflow-y: auto;">
-                <!-- Opsi order akan diisi oleh JavaScript -->
-            </div>
-            <div class="modal-buttons">
-                <button id="cancel-reprint">Batal</button>
-                <button class="btn-reprint" id="confirm-reprint">Cetak</button>
-            </div>
-        </div>
-    </div>
+    function removeMenu(button) {
+      const menuItem = button.parentNode;
+      menuItem.remove();
+      calculateTotal();
+    }
 
-    <!-- Watermark -->
-    <div class="watermark">Website by FAproduction</div>
+    function formatRupiah(angka) {
+      return parseFloat(angka).toLocaleString("id-ID");
+    }
 
-    <script>
-        // Konfigurasi
-        const MENU_SHEET_ID = "1YgOTXFSUwLzpfK1_YQekEN7N5G_45J2o711YX86-siQ";
-        const MENU_SHEET_NAME = 'Menu';
-        const API_KEY = "AIzaSyAz9kMUAWD-MfveClgQJnNV55kTKmrx-Yk";
-        const ADMIN_CREDENTIALS = {
-            username: "owner",
-            password: "tartoast"
-        };
+    function calculateTotal() {
+      let total = 0;
+      document.querySelectorAll("#menu-container .input-group").forEach(group => {
+        const select = group.querySelector(".menu-select");
+        const harga = parseFloat(select.selectedOptions[0]?.dataset.harga || 0);
+        const jumlah = parseInt(group.querySelector(".menu-jumlah").value) || 0;
+        total += harga * jumlah;
+      });
+      document.getElementById("total").value = formatRupiah(total);
+      calculateChange();
+    }
 
-        // Variabel global untuk state aplikasi
-        let state = {
-            menuItems: [],
-            orderItems: JSON.parse(localStorage.getItem('currentOrder')) || [],
-            dailyOrders: JSON.parse(localStorage.getItem('dailyOrders')) || [],
-            orderCounter: parseInt(localStorage.getItem('orderCounter')) || 1,
-            selectedReprintOrder: null
-        };
+    function calculateChange() {
+      const totalStr = document.getElementById("total").value.replace(/\./g, '').replace(',', '.');
+      const total = parseFloat(totalStr) || 0;
+      const bayar = parseFloat(document.getElementById("bayar").value) || 0;
+      const kembali = bayar - total;
+      document.getElementById("kembali").value = kembali >= 0 ? formatRupiah(kembali) : "0";
+    }
 
-        // Fungsi yang selalu dijalankan sebelum reload
-        function executeAndReload(actionFunction) {
-            return function() {
-                // Jalankan fungsi utama
-                const result = actionFunction.apply(this, arguments);
-                
-                // Auto-reload setelah 100ms untuk memastikan semua proses selesai
-                setTimeout(() => {
-                    location.reload();
-                }, 100);
-                
-                return result;
-            };
+    function showLoading() {
+      document.getElementById("loading").style.display = "flex";
+    }
+
+    function hideLoading() {
+      document.getElementById("loading").style.display = "none";
+    }
+
+    document.getElementById("kasirForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const kasir = document.getElementById("nama_kasir").value;
+      if (!kasir) {
+        alert("Silakan pilih nama kasir.");
+        return;
+      }
+
+      const menuItems = [];
+      let valid = true;
+
+      document.querySelectorAll("#menu-container .input-group").forEach(group => {
+        const select = group.querySelector(".menu-select");
+        const jumlah = group.querySelector(".menu-jumlah").value;
+        if (select.value && jumlah > 0) {
+          menuItems.push({
+            nama: select.value,
+            jumlah: parseInt(jumlah)
+          });
+        } else {
+          valid = false;
         }
+      });
 
-        // Fungsi untuk menyimpan pesanan sementara ke localStorage
-        function saveCurrentOrder() {
-            localStorage.setItem('currentOrder', JSON.stringify(state.orderItems));
-        }
+      if (menuItems.length === 0 || !valid) {
+        alert("Minimal satu menu harus dipilih dan jumlah harus diisi.");
+        return;
+      }
 
-        // Fungsi untuk memuat menu dari Google Sheets
-        async function loadMenu() {
-            showLoading(true);
-            try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${MENU_SHEET_ID}/values/${MENU_SHEET_NAME}?key=${API_KEY}`;
-                const response = await fetch(url);
-                
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const data = await response.json();
-                
-                if (data.values && data.values.length > 1) {
-                    state.menuItems = data.values.slice(1).map((row, index) => ({
-                        id: `item-${index}-${Date.now()}`,
-                        name: row[0] || 'Menu tanpa nama',
-                        price: parseInt(row[1]) || 0
-                    }));
-                    
-                    renderMenuDropdown();
-                    renderOrder();
-                    renderOrderHistory();
-                } else {
-                    throw new Error('Data menu kosong');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                // Fallback data dummy
-                state.menuItems = [
-                    { id: '1', name: 'Nasi Goreng', price: 25000 },
-                    { id: '2', name: 'Mie Goreng', price: 20000 },
-                    { id: '3', name: 'Es Teh', price: 5000 },
-                    { id: '4', name: 'Es Jeruk', price: 7000 }
-                ];
-                renderMenuDropdown();
-                renderOrder();
-                alert('Menggunakan data lokal karena gagal mengambil dari server');
-            } finally {
-                showLoading(false);
-            }
-        }
+      const formData = new FormData();
+      formData.append("nama_pelanggan", document.getElementById("nama_pelanggan").value);
+      formData.append("nama_kasir", kasir);
+      formData.append("total", document.getElementById("total").value.replace(/\./g, '').replace(',', '.'));
+      formData.append("bayar", document.getElementById("bayar").value);
+      formData.append("kembali", document.getElementById("kembali").value.replace(/\./g, '').replace(',', '.'));
+      formData.append("menu_list", JSON.stringify(menuItems));
 
-        // Fungsi untuk menambah item ke pesanan
-        function addToOrder() {
-            const menuId = document.getElementById('menu-select').value;
-            if (!menuId) {
-                alert('Silakan pilih menu terlebih dahulu');
-                return false;
-            }
-            
-            const menuItem = state.menuItems.find(item => item.id === menuId);
-            if (!menuItem) return false;
-            
-            const newItem = {
-                id: `order-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                menuId: menuItem.id,
-                name: menuItem.name,
-                price: menuItem.price,
-                quantity: 1
-            };
-            
-            state.orderItems.push(newItem);
-            saveCurrentOrder();
-            return true;
-        }
+      showLoading();
 
-        // Fungsi untuk menghapus item dari pesanan
-        function removeOrderItem(itemId) {
-            state.orderItems = state.orderItems.filter(item => item.id !== itemId);
-            saveCurrentOrder();
-            return true;
-        }
-
-        // Fungsi untuk simpan order
-        function saveOrder() {
-            const cashierName = document.getElementById('cashier-name').value;
-            
-            if (!cashierName) {
-                alert('Harap pilih nama kasir (wajib di isi)');
-                return false;
-            }
-            
-            if (state.orderItems.length === 0) {
-                alert('Tidak ada pesanan untuk disimpan');
-                return false;
-            }
-            
-            const now = new Date();
-            const total = state.orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            const order = {
-                number: state.orderCounter,
-                date: now.toLocaleString('id-ID'),
-                cashier: cashierName,
-                items: JSON.parse(JSON.stringify(state.orderItems)),
-                total: total
-            };
-            
-            state.dailyOrders.push(order);
-            localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
-            
-            state.orderCounter++;
-            localStorage.setItem('orderCounter', state.orderCounter.toString());
-            
-            return order;
-        }
-
-        // Fungsi untuk hapus pesanan saat ini
-        function clearOrder() {
-            state.orderItems = [];
-            localStorage.removeItem('currentOrder');
-            return true;
-        }
-
-        // Fungsi untuk cetak struk
-        function printReceipt(order) {
-            const cashierName = order.cashier || document.getElementById('cashier-name').value || '-';
-            const now = new Date(order.date) || new Date();
-            const total = order.total;
-            
-            let receiptContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Struk TarToast</title>
-                    <style>
-                        body { font-family: Arial; margin: 0; padding: 10px; }
-                        .receipt { width: 80mm; margin: 0 auto; }
-                        .header { text-align: center; }
-                        .title { font-size: 18px; font-weight: bold; }
-                        .divider { border-top: 1px dashed #000; margin: 5px 0; }
-                        .item { display: flex; justify-content: space-between; }
-                        .total { font-weight: bold; border-top: 1px dashed #000; padding-top: 5px; }
-                        .footer { text-align: center; margin-top: 10px; font-size: 12px; }
-                        .reprint-notice { font-size: 10px; color: #666; text-align: center; margin-bottom: 5px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="receipt">
-                        ${order.isReprint ? '<div class="reprint-notice">** CETAK ULANG **</div>' : ''}
-                        <div class="header">
-                            <div class="title">TARTOAST</div>
-                            <div>${now.toLocaleString('id-ID')}</div>
-                            <div>Kasir: ${cashierName}</div>
-                            <div>Order #${order.number}</div>
-                        </div>
-                        <div class="divider"></div>
-            `;
-            
-            order.items.forEach(item => {
-                receiptContent += `
-                    <div class="item">
-                        <span>${item.name} x${item.quantity}</span>
-                        <span>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
-                    </div>
-                `;
-            });
-            
-            receiptContent += `
-                        <div class="divider"></div>
-                        <div class="item total">
-                            <span>TOTAL</span>
-                            <span>Rp ${total.toLocaleString('id-ID')}</span>
-                        </div>
-                        <div class="footer">
-                            Terima kasih
-                        </div>
-                    </div>
-                </body>
-                </html>
-            `;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.open();
-            printWindow.document.write(receiptContent);
-            printWindow.document.close();
-            
-            setTimeout(() => {
-                printWindow.print();
-            }, 200);
-            return true;
-        }
-
-        // Fungsi untuk reset data harian
-        function resetDailyOrders() {
-            document.getElementById('reset-modal').style.display = 'flex';
-            document.getElementById('reset-username').value = '';
-            document.getElementById('reset-password').value = '';
-            document.getElementById('reset-error').style.display = 'none';
-            return false; // Tidak langsung reload, tunggu konfirmasi
-        }
-
-        // Fungsi untuk konfirmasi reset
-        function confirmReset() {
-            const username = document.getElementById('reset-username').value;
-            const password = document.getElementById('reset-password').value;
-            
-            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-                state.dailyOrders = [];
-                state.orderCounter = 1;
-                localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
-                localStorage.setItem('orderCounter', '1');
-                document.getElementById('reset-modal').style.display = 'none';
-                alert('Data harian telah direset');
-                location.reload();
-                return true;
-            } else {
-                document.getElementById('reset-error').style.display = 'block';
-                return false;
-            }
-        }
-
-        // Fungsi untuk tampilkan loading
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
-        }
-
-        // Fungsi untuk render dropdown menu
-        function renderMenuDropdown() {
-            const menuSelect = document.getElementById('menu-select');
-            
-            while (menuSelect.options.length > 1) {
-                menuSelect.remove(1);
-            }
-            
-            state.menuItems.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.id;
-                option.textContent = `${item.name} - Rp ${item.price.toLocaleString('id-ID')}`;
-                menuSelect.appendChild(option);
-            });
-        }
-
-        // Fungsi untuk render pesanan
-        function renderOrder() {
-            const orderList = document.getElementById('order-list');
-            const emptyOrder = document.getElementById('empty-order');
-            const totalAmount = document.getElementById('total-amount');
-            
-            if (state.orderItems.length === 0) {
-                emptyOrder.style.display = 'block';
-                orderList.innerHTML = '';
-                totalAmount.textContent = '0';
-                return;
-            }
-            
-            emptyOrder.style.display = 'none';
-            
-            let total = 0;
-            let orderHtml = '';
-            
-            state.orderItems.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                
-                orderHtml += `
-                    <div class="order-item" data-id="${item.id}">
-                        <div class="order-info">
-                            <strong>${item.name}</strong>
-                            <p>Rp ${item.price.toLocaleString('id-ID')} × ${item.quantity}</p>
-                        </div>
-                        <div class="order-controls">
-                            <span>Rp ${itemTotal.toLocaleString('id-ID')}</span>
-                            <button class="btn-remove" data-id="${item.id}">× Hapus</button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            orderList.innerHTML = orderHtml;
-            totalAmount.textContent = total.toLocaleString('id-ID');
-            
-            document.querySelectorAll('.btn-remove').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const itemId = e.target.getAttribute('data-id');
-                    executeAndReload(() => removeOrderItem(itemId))();
-                });
-            });
-        }
-
-        // Fungsi untuk render/simpan riwayat order
-        function renderOrderHistory() {
-            const orderHistory = document.getElementById('order-history');
-            const emptyHistory = document.getElementById('empty-history');
-            
-            const currentOrderTotal = state.orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const savedOrdersTotal = state.dailyOrders.reduce((sum, order) => sum + order.total, 0);
-            const grandTotal = savedOrdersTotal + currentOrderTotal;
-            
-            if (state.dailyOrders.length === 0 && state.orderItems.length === 0) {
-                emptyHistory.style.display = 'block';
-                orderHistory.innerHTML = '';
-                return;
-            }
-            
-            emptyHistory.style.display = 'none';
-            
-            let historyHtml = '';
-            
-            state.dailyOrders.forEach((order, index) => {
-                historyHtml += `
-                    <div class="order-history-item">
-                        <button class="reprint-btn" data-index="${index}">Cetak Ulang</button>
-                        <strong>Order #${order.number}</strong> (${order.date})<br>
-                        Kasir: ${order.cashier}<br>
-                        ${order.items.map(item => `${item.name} x${item.quantity}`).join(', ')}<br>
-                        <strong>Total Yang di terima: Rp ${order.total.toLocaleString('id-ID')}</strong>
-                    </div>
-                `;
-            });
-            
-            if (state.orderItems.length > 0) {
-                historyHtml += `
-                    <div class="order-history-item current-order">
-                        <strong>Order Dalam Proses</strong><br>
-                        ${state.orderItems.map(item => `${item.name} x${item.quantity}`).join(', ')}<br>
-                        <strong>Total: Rp ${currentOrderTotal.toLocaleString('id-ID')}</strong>
-                    </div>
-                `;
-            }
-            
-            historyHtml += `
-                <div class="order-history-item grand-total">
-                    <strong>TOTAL KESELURUHAN: Rp ${grandTotal.toLocaleString('id-ID')}</strong>
-                </div>
-            `;
-            
-            orderHistory.innerHTML = historyHtml;
-            
-            // Tambahkan event listener untuk tombol cetak ulang
-            document.querySelectorAll('.reprint-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const orderIndex = parseInt(e.target.getAttribute('data-index'));
-                    const orderToReprint = state.dailyOrders[orderIndex];
-                    if (orderToReprint) {
-                        orderToReprint.isReprint = true;
-                        printReceipt(orderToReprint);
-                    }
-                });
-            });
-        }
-
-        // Fungsi untuk menampilkan modal cetak ulang
-        function showReprintModal() {
-            if (state.dailyOrders.length === 0) {
-                alert('Tidak ada order yang bisa dicetak ulang');
-                return;
-            }
-            
-            const modal = document.getElementById('reprint-modal');
-            const optionsContainer = document.getElementById('reprint-options');
-            
-            // Kosongkan container options
-            optionsContainer.innerHTML = '';
-            
-            // Tambahkan radio button untuk setiap order
-            state.dailyOrders.forEach((order, index) => {
-                const div = document.createElement('div');
-                div.style.marginBottom = '10px';
-                div.style.padding = '5px';
-                div.style.borderBottom = '1px solid #eee';
-                
-                const radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = 'reprint-order';
-                radio.value = index;
-                radio.id = `order-${index}`;
-                radio.style.marginRight = '10px';
-                
-                // Pilih radio pertama secara default
-                if (index === 0) {
-                    radio.checked = true;
-                    state.selectedReprintOrder = index;
-                }
-                
-                radio.addEventListener('change', () => {
-                    state.selectedReprintOrder = parseInt(radio.value);
-                });
-                
-                const label = document.createElement('label');
-                label.htmlFor = `order-${index}`;
-                label.innerHTML = `
-                    <strong>Order #${order.number}</strong> (${order.date}) - 
-                    Kasir: ${order.cashier}<br>
-                    Total: Rp ${order.total.toLocaleString('id-ID')}
-                `;
-                
-                div.appendChild(radio);
-                div.appendChild(label);
-                optionsContainer.appendChild(div);
-            });
-            
-            modal.style.display = 'flex';
-        }
-
-        // Fungsi untuk konfirmasi cetak ulang
-        function confirmReprint() {
-            if (state.selectedReprintOrder === null) {
-                alert('Silakan pilih order yang akan dicetak ulang');
-                return;
-            }
-            
-            const orderToReprint = state.dailyOrders[state.selectedReprintOrder];
-            if (orderToReprint) {
-                orderToReprint.isReprint = true;
-                printReceipt(orderToReprint);
-                document.getElementById('reprint-modal').style.display = 'none';
-            }
-        }
-
-        // Fungsi untuk proses lengkap: simpan, cetak, hapus
-        function completeOrderProcess() {
-            // 1. Simpan order
-            const order = saveOrder();
-            if (!order) return false;
-            
-            // 2. Cetak struk
-            printReceipt(order);
-            
-            // 3. Hapus pesanan
-            clearOrder();
-            
-            // Simpan perubahan ke local Storage
-            localStorage.setItem('dailyOrders', JSON.stringify(state.dailyOrders));
-            localStorage.removeItem('currentOrder');
-            
-            // Tampilkan notifikasi
-            alert(`Order #${order.number} telah disimpan dan dicetak!\nTotal: Rp ${order.total.toLocaleString('id-ID')}`);
-            
-            return true;
-        }
-
-        // Inisialisasi saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', () => {
-            // Event listeners
-            document.getElementById('add-btn').addEventListener('click', executeAndReload(addToOrder));
-            document.getElementById('reload-btn').addEventListener('click', () => location.reload());
-            document.getElementById('print-btn').addEventListener('click', executeAndReload(completeOrderProcess));
-            document.getElementById('reset-btn').addEventListener('click', resetDailyOrders);
-            document.getElementById('reprint-btn').addEventListener('click', showReprintModal);
-            
-            // Modal reset
-            document.getElementById('cancel-reset').addEventListener('click', () => {
-                document.getElementById('reset-modal').style.display = 'none';
-            });
-            document.getElementById('confirm-reset').addEventListener('click', confirmReset);
-            
-            // Modal cetak ulang
-            document.getElementById('cancel-reprint').addEventListener('click', () => {
-                document.getElementById('reprint-modal').style.display = 'none';
-            });
-            document.getElementById('confirm-reprint').addEventListener('click', confirmReprint);
-            
-            // Muat menu awal
-            loadMenu();
+      fetch("https://script.google.com/macros/s/AKfycbypLgl92sfguQ1hh5DBEsBy6mSSwAElegtgqY-Jvk8r1z4tYUJBTlnqMFECj1uSxNjcGw/exec", {
+        method: "POST",
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          hideLoading();
+          if (data.status === "success") {
+            alert("Transaksi berhasil disimpan!");
+            location.reload();
+          } else {
+            alert("Gagal menyimpan transaksi.");
+          }
+        })
+        .catch(error => {
+          hideLoading();
+          alert("Error: " + error);
         });
-    </script>
+    });
+
+    // Tambah menu default
+    addMenu();
+  </script>
 </body>
+
 </html>
