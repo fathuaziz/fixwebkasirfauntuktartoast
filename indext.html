@@ -292,10 +292,10 @@
         .then(data => {
           hideLoading();
           if (data.status === "success") {
-            alert("Transaksi berhasil disimpan!");
+            alert("Transaksi sudah disimpan!, jangan lupa laporan setelah selesai sift ya");
             location.reload();
           } else {
-            alert("Gagal menyimpan transaksi.");
+            alert("Gagal menyimpan transaksi., cek koneksi mu siapa tau itu penyebab nya");
           }
         })
         .catch(error => {
