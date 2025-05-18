@@ -2,117 +2,460 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Data Pembelian Tartoast (Dari sheet)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Pembelian Tartoast</title>
   <style>
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      max-width: 800px;
-      margin: 20px auto;
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #166088;
+      --accent-color: #4fc3f7;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    th, td {
-      border: 1px solid #333;
-      padding: 8px 12px;
-      text-align: left;
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    th {
-      background-color: #f4f4f4;
+
+    body {
+      background-color: #f5f7fa;
+      color: var(--dark-color);
+      line-height: 1.6;
+      padding: 20px;
     }
-    caption {
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-size: 1.2em;
-    }
-    .refresh-btn {
-      display: block;
+
+    .container {
+      max-width: 1200px;
       margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+
+    h1 {
+      color: var(--secondary-color);
+      margin-bottom: 15px;
+    }
+
+    .description {
+      color: #6c757d;
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
       padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: var(--border-radius);
       cursor: pointer;
       font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
-    .refresh-btn:hover {
-      background-color: #45a049;
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
     }
-    .header-container {
+
+    .btn-primary:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .btn-outline:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .loading {
       text-align: center;
-      margin-bottom: 20px;
+      padding: 30px;
+      font-size: 18px;
+      color: var(--secondary-color);
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary-color);
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .table-container {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow-x: auto;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+      background-color: var(--light-color);
+      color: var(--dark-color);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:hover {
+      background-color: rgba(74, 111, 165, 0.05);
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-success {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: var(--success-color);
+    }
+
+    .status-pending {
+      background-color: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+    }
+
+    .status-failed {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--danger-color);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+    }
+
+    .empty-state i {
+      font-size: 50px;
+      color: #dee2e6;
+      margin-bottom: 15px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #6c757d;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      header {
+        padding: 15px;
+      }
+      
+      th, td {
+        padding: 8px 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="header-container">
-    <h2>Data Pembelian Tartoast (Dari sheet)</h2>
-    <button class="refresh-btn" onclick="refreshPage()">Refresh Data</button>
+  <div class="container">
+    <header>
+      <h1>Data Pembelian Tartoast</h1>
+      <p class="description">Daftar transaksi pembelian produk Tartoast yang tercatat dalam sistem</p>
+      <div class="controls">
+        <button class="btn btn-primary" id="refresh-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+          </svg>
+          Refresh Data
+        </button>
+        <button class="btn btn-outline" id="export-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+          </svg>
+          Export Data
+        </button>
+      </div>
+    </header>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      Memuat data transaksi...
+    </div>
+
+    <div class="table-container">
+      <div id="table-content"></div>
+    </div>
+
+    <footer class="footer">
+      <p>© Web karya FA untuk TarToast| server admin |.</p>
+    </footer>
   </div>
-  
-  <div id="loading" style="text-align:center;">Memuat data...</div>
-  <div id="table-container"></div>
 
   <script>
-    const url = "https://script.google.com/macros/s/AKfycbyGrWGIsbm1-sihqZVTtCefgC-Q3t3eWTAlCn_FvJx3zx8Jf-WuUDQmlPOamZb2KH7gpw/exec"; // Ganti dengan URL Web App yang sudah kamu deploy
+    // Konfigurasi
+    const config = {
+      apiUrl: "https://script.google.com/macros/s/AKfycbyGrWGIsbm1-sihqZVTtCefgC-Q3t3eWTAlCn_FvJx3zx8Jf-WuUDQmlPOamZb2KH7gpw/exec",
+      itemsPerPage: 10,
+      dateFormatOptions: { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+    };
 
-    async function fetchData() {
+    // Elemen DOM
+    const domElements = {
+      loading: document.getElementById('loading'),
+      tableContent: document.getElementById('table-content'),
+      refreshBtn: document.getElementById('refresh-btn'),
+      exportBtn: document.getElementById('export-btn')
+    };
+
+    // Format tanggal
+    function formatDate(dateString) {
+      if (!dateString) return '-';
       try {
-        const response = await fetch(url);
-        const json = await response.json();
-
-        const loadingEl = document.getElementById('loading');
-        loadingEl.style.display = 'none';
-
-        if (json.status === 'success' && Array.isArray(json.data)) {
-          renderTable(json.data);
-        } else {
-          document.getElementById('table-container').innerText = 'Gagal memuat data: ' + (json.message || 'Tidak ada data');
-        }
-      } catch (err) {
-        document.getElementById('loading').innerText = 'Error memuat data: ' + err.message;
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', config.dateFormatOptions);
+      } catch {
+        return dateString;
       }
     }
 
+    // Format mata uang
+    function formatCurrency(amount) {
+      if (isNaN(amount)) return amount;
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      }).format(amount);
+    }
+
+    // Format status
+    function formatStatus(status) {
+      if (!status) return '-';
+      const statusText = status.toString().toLowerCase();
+      
+      if (statusText.includes('sukses') || statusText.includes('berhasil')) {
+        return `<span class="status status-success">${status}</span>`;
+      } else if (statusText.includes('pending') || statusText.includes('proses')) {
+        return `<span class="status status-pending">${status}</span>`;
+      } else if (statusText.includes('gagal') || statusText.includes('batal')) {
+        return `<span class="status status-failed">${status}</span>`;
+      }
+      return status;
+    }
+
+    // Render tabel
     function renderTable(data) {
-      if (data.length === 0) {
-        document.getElementById('table-container').innerText = 'Data kosong.';
+      if (!data || data.length === 0) {
+        domElements.tableContent.innerHTML = `
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9H5.5zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518l.087.02z"/>
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M8 13.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11zm0 .5A6 6 0 1 0 8 2a6 6 0 0 0 0 12z"/>
+            </svg>
+            <h3>Tidak ada data transaksi</h3>
+            <p>Silakan refresh atau coba lagi nanti</p>
+          </div>
+        `;
         return;
       }
 
-      // Buat header tabel dari key object pertama
+      // Ambil header dari key object pertama
       const headers = Object.keys(data[0]);
-      let html = '<table><caption>Daftar Transaksi</caption><thead><tr>';
+      
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              ${headers.map(header => `<th>${header}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${data.map(row => `
+              <tr>
+                ${headers.map(header => {
+                  let cellContent = row[header] || '-';
+                  
+                  // Format khusus berdasarkan header
+                  if (header.toLowerCase().includes('tanggal') || header.toLowerCase().includes('date')) {
+                    cellContent = formatDate(cellContent);
+                  } else if (header.toLowerCase().includes('harga') || header.toLowerCase().includes('amount') || header.toLowerCase().includes('total')) {
+                    cellContent = formatCurrency(cellContent);
+                  } else if (header.toLowerCase().includes('status')) {
+                    cellContent = formatStatus(cellContent);
+                  }
+                  
+                  return `<td>${cellContent}</td>`;
+                }).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
 
-      headers.forEach(h => {
-        html += `<th>${h}</th>`;
-      });
-      html += '</tr></thead><tbody>';
+      domElements.tableContent.innerHTML = html;
+    }
+
+    // Fetch data dari API
+    async function fetchData() {
+      try {
+        domElements.loading.style.display = 'block';
+        domElements.tableContent.innerHTML = '';
+        
+        const response = await fetch(config.apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const json = await response.json();
+        
+        domElements.loading.style.display = 'none';
+        
+        if (json.status === 'success' && Array.isArray(json.data)) {
+          renderTable(json.data);
+        } else {
+          domElements.tableContent.innerHTML = `
+            <div class="empty-state">
+              <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353L11.46.146zM8 4c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995A.905.905 0 0 1 8 4zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+              </svg>
+              <h3>Gagal memuat data</h3>
+              <p>${json.message || 'Terjadi kesalahan saat memuat data'}</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        domElements.loading.style.display = 'none';
+        domElements.tableContent.innerHTML = `
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+              <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+            </svg>
+            <h3>Error: Gagal memuat data</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    // Export data ke CSV
+    function exportToCSV(data) {
+      if (!data || data.length === 0) {
+        alert('Tidak ada data untuk diexport');
+        return;
+      }
+
+      const headers = Object.keys(data[0]);
+      let csvContent = headers.join(',') + '\n';
 
       data.forEach(row => {
-        html += '<tr>';
-        headers.forEach(h => {
-          html += `<td>${row[h]}</td>`;
+        const rowValues = headers.map(header => {
+          let value = row[header] || '';
+          // Handle values that might contain commas
+          if (typeof value === 'string' && value.includes(',')) {
+            return `"${value}"`;
+          }
+          return value;
         });
-        html += '</tr>';
+        csvContent += rowValues.join(',') + '\n';
       });
 
-      html += '</tbody></table>';
-
-      document.getElementById('table-container').innerHTML = html;
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `data_pembelian_tartoast_${new Date().toISOString().slice(0,10)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
-    function refreshPage() {
-      // Tampilkan kembali loading indicator
-      document.getElementById('loading').style.display = 'block';
-      document.getElementById('loading').innerText = 'Memuat data...';
-      document.getElementById('table-container').innerHTML = '';
-      
-      // Fetch data lagi
-      fetchData();
-    }
+    // Event Listeners
+    domElements.refreshBtn.addEventListener('click', fetchData);
+    domElements.exportBtn.addEventListener('click', async () => {
+      try {
+        const response = await fetch(config.apiUrl);
+        const json = await response.json();
+        
+        if (json.status === 'success' && Array.isArray(json.data)) {
+          exportToCSV(json.data);
+        } else {
+          alert('Gagal mendapatkan data untuk export: ' + (json.message || 'Tidak ada data'));
+        }
+      } catch (error) {
+        alert('Error saat mengekspor data: ' + error.message);
+        console.error('Export error:', error);
+      }
+    });
 
-    // Panggil fetchData saat halaman pertama kali dimuat
-    fetchData();
+    // Inisialisasi
+    document.addEventListener('DOMContentLoaded', fetchData);
   </script>
 </body>
 </html>
