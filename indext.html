@@ -184,7 +184,7 @@
       font-weight: bold;
     }
 
-    /* Password modal styles */
+    /* Password masuk css */
     #passwordModal {
       display: none;
       position: fixed;
@@ -286,7 +286,7 @@
       }
     }
 
-    /* Print styles */
+   
     @media print {
       body {
         background-color: white;
@@ -332,13 +332,15 @@
         <select id="nama_kasir" name="nama_kasir" required>
           <option value="">-- Pilih Kasir --</option>
           <option value="fathu">Fathu</option>
-          <option value="aziz">Aziz</option>
-          <option value="wibawa">Wibawa</option>
-          <option value="mbuh">Mbuh</option>
+          <option value="zen">zen</option>
+          <option value="salman">salman</option>
+          <option value="femi">femi</option>
+          <option value="denias">denias</option>
+          <option value="arkan">arkan</option>
         </select>
       </div>
 
-      <!-- Menu Section in separate box -->
+      <!-- Menu box -->
       <div class="menu-section">
         <h3>Menu Pesanan</h3>
         <div id="menu-container"></div>
@@ -355,7 +357,7 @@
       <div class="input-group">
         <div class="form-group">
           <label for="bayar">Bayar (Rp)</label>
-          <input type="number" id="bayar" name="bayar" min="0" required placeholder="Jumlah pembayaran">
+          <input type="number" id="bayar" name="bayar" min="0" required placeholder="Diberi uang">
         </div>
         <div class="form-group">
           <label for="kembali">Kembalian (Rp)</label>
@@ -370,18 +372,18 @@
         <div id="receipt-content"></div>
       </div>
 
-      <!-- Rekap Data Button -->
+      <!-- Rekap Data -->
       <button type="button" id="rekapBtn" onclick="showPasswordModal()">Akses Rekap Data</button>
     </form>
   </div>
   <footer class="footer">
-      <p>© Web karya FA untuk TarToast| server admin |.</p>
+      <p>© Web karya FA untuk TarToast| server staf outlet |.</p>
     </footer>
   <div id="loading">
     Memproses transaksi...
   </div>
 
-  <!-- Password Modal -->
+  <!-- Password -->
   <div id="passwordModal">
     <div>
       <h3>Masukkan Password</h3>
@@ -393,6 +395,39 @@
 
   </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+   // Initialize form with one menu item
   <script>
     const menuList = [
       { nama: "Roti Bakar Keju", harga: 10000 },
@@ -403,14 +438,42 @@
       { nama: "Kopi Susu", harga: 8000 },
       { nama: "Jus Alpukat", harga: 12000 },
       { nama: "Es Jeruk", harga: 7000 }
+      { nama: "Es moni", harga: 70000 }
     ];
 
-    // Initialize form with one menu item
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     document.addEventListener('DOMContentLoaded', function() {
       addMenu();
       updateReceiptPreview();
       
-      // Add event listeners
+
+      
       document.getElementById("bayar").addEventListener("input", function() {
         calculateChange();
         updateReceiptPreview();
@@ -538,7 +601,7 @@
       document.getElementById("loading").style.display = "none";
     }
 
-    // Password functions
+    // Password function
     function showPasswordModal() {
       document.getElementById("passwordModal").style.display = "flex";
     }
@@ -561,14 +624,14 @@
     document.getElementById("kasirForm").addEventListener("submit", function (e) {
       e.preventDefault();
 
-      // Validate kasir selection
+      // Validaso kasir selection
       const kasir = document.getElementById("nama_kasir").value;
       if (!kasir) {
         alert("Silakan pilih nama kasir.");
         return;
       }
 
-      // Validate menu items
+      // Validasi menu
       const menuItems = [];
       let valid = true;
       let hasItems = false;
@@ -594,7 +657,7 @@
         return;
       }
 
-      // Validate payment
+      // Validasi payment
       const totalStr = document.getElementById("total").value.replace(/\./g, '').replace(',', '.');
       const total = parseFloat(totalStr) || 0;
       const bayar = parseFloat(document.getElementById("bayar").value) || 0;
@@ -604,7 +667,7 @@
         return;
       }
 
-      // Prepare form data
+      // input formulir
       const formData = new FormData();
       formData.append("nama_pelanggan", document.getElementById("nama_pelanggan").value);
       formData.append("nama_kasir", kasir);
@@ -615,7 +678,7 @@
 
       showLoading();
 
-      // Send data to Google Apps Script
+      // kirim data ke Google Apps Script
       fetch("https://script.google.com/macros/s/AKfycbypLgl92sfguQ1hh5DBEsBy6mSSwAElegtgqY-Jvk8r1z4tYUJBTlnqMFECj1uSxNjcGw/exec", {
         method: "POST",
         body: formData
@@ -626,7 +689,7 @@
           if (data.status === "success") {
             alert("Transaksi berhasil disimpan!\nJangan lupa laporan setelah selesai shift ya.");
             
-            // Option to print receipt
+            // opsi cetak struk
             if (confirm("Cetak struk sekarang?")) {
               window.print();
             }
