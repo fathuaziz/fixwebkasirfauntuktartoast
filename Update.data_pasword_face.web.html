@@ -5,19 +5,19 @@
   <title>LOGIN KASIR TARTOAST</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* Background gradasi */
+ 
     body {
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #ffe6e6, #fff5f5);
+      background: linear-gradient(135deg, #ffcfa6, #fff5f5);
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    /* Container utama */
+ 
     #form-container {
       background-color: #fff;
       padding: 30px 25px;
@@ -27,14 +27,14 @@
       max-width: 380px;
     }
 
-    /* Judul */
+ 
     h2 {
       text-align: center;
-      color: #dc3545;
+      color: #ff8800;
       margin-bottom: 25px;
     }
 
-    /* Label dan input */
+ 
     label {
       display: block;
       margin-bottom: 6px;
@@ -51,10 +51,10 @@
       font-size: 15px;
     }
 
-    /* Tombol login */
+ 
     input[type="submit"] {
       width: 100%;
-      background-color: #dc3545;
+      background-color: #ff8800;
       color: white;
       padding: 12px;
       border: none;
@@ -69,14 +69,14 @@
       background-color: #c82333;
     }
 
-    /* Notice box */
+ 
     .notice {
       margin-top: 20px;
       font-size: 13px;
       color: #721c24;
-      background-color: #f8d7da;
+      background-color: #ffc787;
       padding: 12px;
-      border-left: 5px solid #dc3545;
+      border-left: 5px solid #ff8800;
       border-radius: 6px;
     }
 
@@ -92,9 +92,9 @@
   <div id="form-container">
     <h2>LOGIN KASIR TARTOAST</h2>
     <form id="loginForm" action="https://script.google.com/macros/s/AKfycbyrrHoWru_m9RlRt1qhXYbKgF_yZv59lPuEHM3isOCCaU-ord9skcv4sbE-RNFLK61J/exec" method="post">
-      <label for="username">Pilih Username</label>
+      <label for="username">Nama Kasir</label>
       <select id="username" name="username" required>
-        <option value="">-- Pilih User --</option>
+        <option value="">-- Nama Kasir --</option>
         <option value="femi">femi</option>
         <option value="arkan">arkan</option>
         <option value="denias">denias</option>
@@ -123,7 +123,7 @@
     const password = document.getElementById('password').value;
     const form = this;
 
-    // Kirim data ke Google Apps Script
+ 
     fetch(form.action, {
       method: 'POST',
       body: new URLSearchParams(new FormData(form)),
@@ -134,7 +134,7 @@
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        // Redirect ke halaman berikutnya jika login berhasil
+ 
         window.location.href = "https://fathuaziz.github.io/fixwebkasirfauntuktartoast/indext.html";
       } else {
         alert(data.message);
