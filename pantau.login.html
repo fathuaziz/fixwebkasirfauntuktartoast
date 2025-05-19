@@ -29,6 +29,7 @@
       justify-content: center;
       gap: 10px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
     }
     button {
       padding: 8px 16px;
@@ -40,6 +41,20 @@
     }
     button:hover {
       background-color: #3a5a80;
+    }
+    button.sales {
+      background-color: #4CAF50;
+    }
+    button.sales:hover {
+      background-color: #3e8e41;
+    }
+
+        .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #6c757d;
+      font-size: 14px;
+
     }
     table {
       width: 100%;
@@ -94,6 +109,7 @@
     <div class="controls">
       <button id="refresh-btn">Refresh Data</button>
       <button id="export-btn">Export Data</button>
+      <button id="sales-btn" class="sales">Lihat Data Penjualan</button>
     </div>
     
     <div id="loading" class="loading">
@@ -104,8 +120,16 @@
     <div id="table-container">
       <!-- Table akan dimuat di sini -->
     </div>
+
+
   </div>
 
+
+     <footer class="footer">
+      <p>© Web karya FA untuk TarToast| server admin |.</p>
+    </footer>
+
+    
   <script>
     // API endpoint
     const API_URL = "https://script.google.com/macros/s/AKfycbzAqkM69HBB_3690m0czSTWvxObyWCdn2DkPa1fzOov7JehVCnWnMP4GzfTY2g0Ms6D/exec";
@@ -203,6 +227,11 @@
       } catch (error) {
         alert('Gagal mengekspor: ' + error.message);
       }
+    });
+    
+    // Tombol untuk melihat data penjualan
+    document.getElementById('sales-btn').addEventListener('click', () => {
+      window.open('https://fathuaziz.github.io/fixwebkasirfauntuktartoast/rekap.html', '_blank');
     });
   </script>
 </body>
