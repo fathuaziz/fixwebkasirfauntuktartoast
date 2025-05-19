@@ -98,6 +98,16 @@
       color: white;
     }
 
+    .btn-info {
+      background-color: #17a2b8;
+      color: white;
+    }
+
+    .btn-info:hover {
+      background-color: #138496;
+      transform: translateY(-2px);
+    }
+
     .loading {
       text-align: center;
       padding: 30px;
@@ -216,6 +226,9 @@
         <button class="btn btn-outline" id="export-btn">
           Export Data
         </button>
+        <button class="btn btn-info" id="login-data-btn">
+          Lihat Data Login
+        </button>
       </div>
     </header>
 
@@ -252,7 +265,8 @@
       loading: document.getElementById('loading'),
       tableContent: document.getElementById('table-content'),
       refreshBtn: document.getElementById('refresh-btn'),
-      exportBtn: document.getElementById('export-btn')
+      exportBtn: document.getElementById('export-btn'),
+      loginDataBtn: document.getElementById('login-data-btn')
     };
 
     // Format tanggal
@@ -426,6 +440,11 @@
         alert('Error saat mengekspor data: ' + error.message);
         console.error('Export error:', error);
       }
+    });
+
+    // Tambahkan event listener untuk tombol login data
+    domElements.loginDataBtn.addEventListener('click', () => {
+      window.open('https://fathuaziz.github.io/fixwebkasirfauntuktartoast/pantau.login.html', '_blank');
     });
 
     // Inisialisasi
