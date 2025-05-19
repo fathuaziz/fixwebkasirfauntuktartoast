@@ -48,13 +48,18 @@
     button.sales:hover {
       background-color: #3e8e41;
     }
+    button.kasir {
+      background-color: #FF9800;
+    }
+    button.kasir:hover {
+      background-color: #e68a00;
+    }
 
-        .footer {
+    .footer {
       text-align: center;
       margin-top: 30px;
       color: #6c757d;
       font-size: 14px;
-
     }
     table {
       width: 100%;
@@ -100,6 +105,36 @@
       letter-spacing: 3px;
       font-family: monospace;
     }
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 300px;
+      border-radius: 5px;
+    }
+    .modal-content input {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      box-sizing: border-box;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
@@ -110,6 +145,7 @@
       <button id="refresh-btn">Refresh Data</button>
       <button id="export-btn">Export Data</button>
       <button id="sales-btn" class="sales">Lihat Data Penjualan</button>
+      <button id="kasir-btn" class="kasir">Kembali ke Kasir</button>
     </div>
     
     <div id="loading" class="loading">
@@ -120,19 +156,31 @@
     <div id="table-container">
       <!-- Table akan dimuat di sini -->
     </div>
-
-
   </div>
 
+  <!-- Modal untuk password -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <h3>Masukkan Password</h3>
+      <p>Untuk mengakses kasir, masukkan password:</p>
+      <input type="password" id="passwordInput" placeholder="Password">
+      <div class="modal-buttons">
+        <button id="cancelBtn">Batal</button>
+        <button id="confirmBtn">OK</button>
+      </div>
+      <p id="errorMsg" style="color:red; display:none;"></p>
+    </div>
+  </div>
 
-     <footer class="footer">
-      <p>© Web karya FA untuk TarToast| server admin |.</p>
-    </footer>
+  <footer class="footer">
+    <p>© Web karya FA untuk TarToast| server admin |.</p>
+  </footer>
 
-    
   <script>
     // API endpoint
     const API_URL = "https://script.google.com/macros/s/AKfycbzAqkM69HBB_3690m0czSTWvxObyWCdn2DkPa1fzOov7JehVCnWnMP4GzfTY2g0Ms6D/exec";
+    const CORRECT_PASSWORD = "tartoast";
+    const KASIR_URL = "https://fathuaziz.github.io/fixwebkasirfauntuktartoast/indext.html";
     
     // Format tanggal
     function formatDate(timestamp) {
@@ -202,6 +250,31 @@
       }
     }
     
+    // Modal functions
+    function showPasswordModal() {
+      const modal = document.getElementById('passwordModal');
+      modal.style.display = 'block';
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+    
+    function hidePasswordModal() {
+      document.getElementById('passwordModal').style.display = 'none';
+    }
+    
+    function checkPassword() {
+      const password = document.getElementById('passwordInput').value;
+      const errorMsg = document.getElementById('errorMsg');
+      
+      if (password === CORRECT_PASSWORD) {
+        window.open(KASIR_URL, '_blank');
+        hidePasswordModal();
+      } else {
+        errorMsg.textContent = 'Password salah!';
+        errorMsg.style.display = 'block';
+      }
+    }
+    
     // Event listeners
     document.getElementById('refresh-btn').addEventListener('click', fetchData);
     document.addEventListener('DOMContentLoaded', fetchData);
@@ -232,6 +305,18 @@
     // Tombol untuk melihat data penjualan
     document.getElementById('sales-btn').addEventListener('click', () => {
       window.open('https://fathuaziz.github.io/fixwebkasirfauntuktartoast/rekap.html', '_blank');
+    });
+    
+    // Tombol untuk kembali ke kasir dengan password
+    document.getElementById('kasir-btn').addEventListener('click', showPasswordModal);
+    document.getElementById('cancelBtn').addEventListener('click', hidePasswordModal);
+    document.getElementById('confirmBtn').addEventListener('click', checkPassword);
+    
+    // Juga bisa tekan Enter di input password
+    document.getElementById('passwordInput').addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
     });
   </script>
 </body>
