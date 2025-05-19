@@ -1,58 +1,216 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data Pantau Login Tartoast</title>
+  <title>Data Login Tartoast</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #166088;
+      --accent-color: #4fc3f7;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --warning-color: #ff9800;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
-      padding: 20px;
-      background-color: #f5f5f5;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
+    body {
+      background-color: #f5f7fa;
+      color: var(--dark-color);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
     .container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
-      background: white;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    h1 {
-      color: #333;
+
+    header {
       text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+
+    h1 {
+      color: var(--secondary-color);
+      margin-bottom: 15px;
+    }
+
+    .description {
+      color: #6c757d;
       margin-bottom: 20px;
     }
+
     .controls {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 15px;
       margin-bottom: 20px;
       flex-wrap: wrap;
     }
-    button {
-      padding: 8px 16px;
-      background-color: #4a6fa5;
-      color: white;
+
+    .btn {
+      padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: var(--border-radius);
       cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
-    button:hover {
-      background-color: #3a5a80;
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
     }
-    button.sales {
-      background-color: #4CAF50;
+
+    .btn-primary:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
     }
-    button.sales:hover {
-      background-color: #3e8e41;
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
     }
-    button.kasir {
-      background-color: #FF9800;
+
+    .btn-outline:hover {
+      background-color: var(--primary-color);
+      color: white;
     }
-    button.kasir:hover {
+
+    .btn-info {
+      background-color: #17a2b8;
+      color: white;
+    }
+
+    .btn-info:hover {
+      background-color: #138496;
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+    }
+
+    .btn-warning {
+      background-color: var(--warning-color);
+      color: white;
+    }
+
+    .btn-warning:hover {
       background-color: #e68a00;
+      transform: translateY(-2px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      font-size: 18px;
+      color: var(--secondary-color);
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--primary-color);
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .table-container {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow-x: auto;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+      background-color: var(--light-color);
+      color: var(--dark-color);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:hover {
+      background-color: rgba(74, 111, 165, 0.05);
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-success {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: var(--success-color);
+    }
+
+    .status-failed {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--danger-color);
+    }
+
+    .password-mask {
+      letter-spacing: 3px;
+      font-family: monospace;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
     }
 
     .footer {
@@ -61,143 +219,227 @@
       color: #6c757d;
       font-size: 14px;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    tr:hover {
-      background-color: #f5f5f5;
-    }
-    .success {
-      color: green;
-    }
-    .failed {
-      color: red;
-    }
-    .loading {
-      text-align: center;
-      padding: 20px;
-      font-size: 18px;
-    }
-    .spinner {
-      border: 4px solid rgba(0,0,0,0.1);
-      border-radius: 50%;
-      border-top: 4px solid #4a6fa5;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 15px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .password-mask {
-      letter-spacing: 3px;
-      font-family: monospace;
-    }
+
     /* Modal styles */
     .modal {
       display: none;
       position: fixed;
-      z-index: 1;
+      z-index: 1000;
       left: 0;
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0,0,0,0.4);
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(3px);
     }
+
     .modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 300px;
-      border-radius: 5px;
+      background-color: white;
+      margin: 10% auto;
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      width: 90%;
+      max-width: 400px;
+      animation: modalFadeIn 0.3s;
     }
-    .modal-content input {
-      width: 100%;
-      padding: 8px;
-      margin: 10px 0;
-      box-sizing: border-box;
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    .modal-buttons {
+
+    .modal-header {
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      color: var(--secondary-color);
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .modal-footer {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+    }
+
+    .error-message {
+      color: var(--danger-color);
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      header {
+        padding: 15px;
+      }
+      
+      th, td {
+        padding: 8px 10px;
+      }
+
+      .controls {
+        gap: 10px;
+      }
+
+      .btn {
+        padding: 8px 15px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Data Login Tartoast</h1>
-    
-    <div class="controls">
-      <button id="refresh-btn">Refresh Data</button>
-      <button id="export-btn">Export Data</button>
-      <button id="sales-btn" class="sales">Lihat Data Penjualan</button>
-      <button id="kasir-btn" class="kasir">Kembali ke Kasir</button>
-    </div>
-    
+    <header>
+      <h1>Data Login Tartoast</h1>
+      <p class="description">Daftar aktivitas login sistem Tartoast yang tercatat dalam sistem web ini, hanya admin yang mempunyai password saja yang bisa mengakses halaman ini. Demi transparansi data, SEMUA AKTIVITAS EDIT PADA SHEET AKAN TERDATA</p>
+      <div class="controls">
+        <button class="btn btn-primary" id="refresh-btn">
+          Refresh Data
+        </button>
+        <button class="btn btn-outline" id="export-btn">
+          Export Data
+        </button>
+        <button class="btn btn-success" id="sales-btn">
+          Lihat Data Penjualan
+        </button>
+        <button class="btn btn-warning" id="kasir-btn">
+          Buka Kasir
+        </button>
+      </div>
+    </header>
+
     <div id="loading" class="loading">
       <div class="spinner"></div>
-      Memuat data...
+      Memuat data login...
     </div>
-    
-    <div id="table-container">
-      <!-- Table akan dimuat di sini -->
+
+    <div class="table-container">
+      <div id="table-content"></div>
     </div>
+
+    <footer class="footer">
+      <p>© Web karya FA untuk TarToast | server admin |</p>
+    </footer>
   </div>
 
-  <!-- Modal untuk password -->
+  <!-- Modal untuk password kasir -->
   <div id="passwordModal" class="modal">
     <div class="modal-content">
-      <h3>Masukkan Password</h3>
-      <p>Untuk mengakses kasir, masukkan password:</p>
-      <input type="password" id="passwordInput" placeholder="Password">
-      <div class="modal-buttons">
-        <button id="cancelBtn">Batal</button>
-        <button id="confirmBtn">OK</button>
+      <div class="modal-header">
+        <h3>Akses Kasir</h3>
       </div>
-      <p id="errorMsg" style="color:red; display:none;"></p>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="passwordInput">Masukkan Password:</label>
+          <input type="password" id="passwordInput" class="form-control" placeholder="Password kasir">
+          <div id="errorMsg" class="error-message">Password salah!</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelBtn" class="btn btn-outline">Batal</button>
+        <button id="confirmBtn" class="btn btn-primary">Masuk</button>
+      </div>
     </div>
   </div>
 
-  <footer class="footer">
-    <p>© Web karya FA untuk TarToast| server admin |.</p>
-  </footer>
-
   <script>
-    // API endpoint
-    const API_URL = "https://script.google.com/macros/s/AKfycbzAqkM69HBB_3690m0czSTWvxObyWCdn2DkPa1fzOov7JehVCnWnMP4GzfTY2g0Ms6D/exec";
-    const CORRECT_PASSWORD = "tartoast";
-    const KASIR_URL = "https://fathuaziz.github.io/fixwebkasirfauntuktartoast/indext.html";
-    
+    // Konfigurasi
+    const config = {
+      apiUrl: "https://script.google.com/macros/s/AKfycbzAqkM69HBB_3690m0czSTWvxObyWCdn2DkPa1fzOov7JehVCnWnMP4GzfTY2g0Ms6D/exec",
+      kasirUrl: "https://fathuaziz.github.io/fixwebkasirfauntuktartoast/indext.html",
+      salesUrl: "https://fathuaziz.github.io/fixwebkasirfauntuktartoast/rekap.html",
+      correctPassword: "tartoast",
+      dateFormatOptions: { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }
+    };
+
+    // Elemen DOM
+    const domElements = {
+      loading: document.getElementById('loading'),
+      tableContent: document.getElementById('table-content'),
+      refreshBtn: document.getElementById('refresh-btn'),
+      exportBtn: document.getElementById('export-btn'),
+      salesBtn: document.getElementById('sales-btn'),
+      kasirBtn: document.getElementById('kasir-btn'),
+      passwordModal: document.getElementById('passwordModal'),
+      passwordInput: document.getElementById('passwordInput'),
+      errorMsg: document.getElementById('errorMsg'),
+      cancelBtn: document.getElementById('cancelBtn'),
+      confirmBtn: document.getElementById('confirmBtn')
+    };
+
     // Format tanggal
     function formatDate(timestamp) {
       if (!timestamp) return '-';
-      const date = new Date(timestamp);
-      return date.toLocaleString('id-ID');
+      try {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('id-ID', config.dateFormatOptions);
+      } catch (error) {
+        console.error('Error formatting date:', error);
+        return timestamp;
+      }
     }
-    
-    // Tampilkan data
-    function showData(data) {
-      const container = document.getElementById('table-container');
+
+    // Format status login
+    function formatStatus(status) {
+      if (!status) return '-';
+      const statusText = status.toString().toLowerCase();
       
+      if (statusText.includes('sukses') || statusText.includes('berhasil')) {
+        return `<span class="status status-success">${status}</span>`;
+      } else if (statusText.includes('gagal')) {
+        return `<span class="status status-failed">${status}</span>`;
+      }
+      return status;
+    }
+
+    // Render tabel data login
+    function renderLoginTable(data) {
       if (!data || data.length === 0) {
-        container.innerHTML = '<p>Tidak ada data login</p>';
+        domElements.tableContent.innerHTML = `
+          <div class="empty-state">
+            <h3>Tidak ada data login</h3>
+            <p>Silakan refresh atau coba lagi nanti</p>
+          </div>
+        `;
         return;
       }
-      
+
       let html = `
         <table>
           <thead>
@@ -210,114 +452,143 @@
           </thead>
           <tbody>
       `;
-      
+
       data.forEach(row => {
         html += `
           <tr>
             <td>${formatDate(row.timestamp)}</td>
             <td>${row.username || '-'}</td>
             <td class="password-mask">••••••••</td>
-            <td class="${row.status.toLowerCase()}">${row.status || '-'}</td>
+            <td>${formatStatus(row.status)}</td>
           </tr>
         `;
       });
-      
+
       html += `
           </tbody>
         </table>
       `;
-      
-      container.innerHTML = html;
+
+      domElements.tableContent.innerHTML = html;
     }
-    
-    // Ambil data dari server
+
+    // Fetch data dari API
     async function fetchData() {
       try {
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('table-container').innerHTML = '';
+        domElements.loading.style.display = 'block';
+        domElements.tableContent.innerHTML = '';
         
-        const response = await fetch(API_URL);
+        const response = await fetch(config.apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
-        document.getElementById('loading').style.display = 'none';
-        showData(data);
+        domElements.loading.style.display = 'none';
+        renderLoginTable(data);
       } catch (error) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('table-container').innerHTML = `
-          <p style="color:red">Error: Gagal memuat data. ${error.message}</p>
+        domElements.loading.style.display = 'none';
+        domElements.tableContent.innerHTML = `
+          <div class="empty-state">
+            <h3>Error: Gagal memuat data</h3>
+            <p>${error.message}</p>
+          </div>
         `;
-        console.error('Error:', error);
+        console.error('Error fetching data:', error);
       }
     }
-    
-    // Modal functions
-    function showPasswordModal() {
-      const modal = document.getElementById('passwordModal');
-      modal.style.display = 'block';
-      document.getElementById('passwordInput').value = '';
-      document.getElementById('errorMsg').style.display = 'none';
-    }
-    
-    function hidePasswordModal() {
-      document.getElementById('passwordModal').style.display = 'none';
-    }
-    
-    function checkPassword() {
-      const password = document.getElementById('passwordInput').value;
-      const errorMsg = document.getElementById('errorMsg');
-      
-      if (password === CORRECT_PASSWORD) {
-        window.open(KASIR_URL, '_blank');
-        hidePasswordModal();
-      } else {
-        errorMsg.textContent = 'Password salah!';
-        errorMsg.style.display = 'block';
-      }
-    }
-    
-    // Event listeners
-    document.getElementById('refresh-btn').addEventListener('click', fetchData);
-    document.addEventListener('DOMContentLoaded', fetchData);
-    
-    // Export data (dengan password tetap tersembunyi)
-    document.getElementById('export-btn').addEventListener('click', async () => {
+
+    // Export data ke CSV
+    async function exportToCSV() {
       try {
-        const response = await fetch(API_URL);
+        const response = await fetch(config.apiUrl);
         const data = await response.json();
         
-        let csvContent = "Waktu,Username,Password,Status\n";
-        
+        if (!data || data.length === 0) {
+          alert('Tidak ada data untuk diexport');
+          return;
+        }
+
+        const headers = ['Waktu', 'Username', 'Password', 'Status'];
+        let csvContent = headers.join(',') + '\n';
+
         data.forEach(row => {
-          csvContent += `"${formatDate(row.timestamp)}","${row.username || ''}","••••••••","${row.status || ''}"\n`;
+          const rowData = [
+            formatDate(row.timestamp),
+            `"${row.username || ''}"`,
+            '"••••••••"',
+            `"${row.status || ''}"`
+          ];
+          csvContent += rowData.join(',') + '\n';
         });
-        
+
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = url;
-        link.download = `data_login_${new Date().toISOString().slice(0,10)}.csv`;
+        link.setAttribute('href', url);
+        link.setAttribute('download', `data_login_tartoast_${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
       } catch (error) {
-        alert('Gagal mengekspor: ' + error.message);
+        alert('Error saat mengekspor data: ' + error.message);
+        console.error('Export error:', error);
       }
+    }
+
+    // Fungsi untuk modal password
+    function showPasswordModal() {
+      domElements.passwordModal.style.display = 'block';
+      domElements.passwordInput.value = '';
+      domElements.errorMsg.style.display = 'none';
+      domElements.passwordInput.focus();
+    }
+
+    function hidePasswordModal() {
+      domElements.passwordModal.style.display = 'none';
+    }
+
+    function checkPassword() {
+      const password = domElements.passwordInput.value;
+      
+      if (password === config.correctPassword) {
+        window.open(config.kasirUrl, '_blank');
+        hidePasswordModal();
+      } else {
+        domElements.errorMsg.style.display = 'block';
+        domElements.passwordInput.focus();
+      }
+    }
+
+    // Event Listeners
+    domElements.refreshBtn.addEventListener('click', fetchData);
+    domElements.exportBtn.addEventListener('click', exportToCSV);
+    domElements.salesBtn.addEventListener('click', () => {
+      window.open(config.salesUrl, '_blank');
     });
-    
-    // Tombol untuk melihat data penjualan
-    document.getElementById('sales-btn').addEventListener('click', () => {
-      window.open('https://fathuaziz.github.io/fixwebkasirfauntuktartoast/rekap.html', '_blank');
-    });
-    
-    // Tombol untuk kembali ke kasir dengan password
-    document.getElementById('kasir-btn').addEventListener('click', showPasswordModal);
-    document.getElementById('cancelBtn').addEventListener('click', hidePasswordModal);
-    document.getElementById('confirmBtn').addEventListener('click', checkPassword);
+    domElements.kasirBtn.addEventListener('click', showPasswordModal);
+    domElements.cancelBtn.addEventListener('click', hidePasswordModal);
+    domElements.confirmBtn.addEventListener('click', checkPassword);
     
     // Juga bisa tekan Enter di input password
-    document.getElementById('passwordInput').addEventListener('keyup', (e) => {
+    domElements.passwordInput.addEventListener('keyup', (e) => {
       if (e.key === 'Enter') {
         checkPassword();
       }
     });
+
+    // Klik di luar modal untuk menutup
+    window.addEventListener('click', (e) => {
+      if (e.target === domElements.passwordModal) {
+        hidePasswordModal();
+      }
+    });
+
+    // Inisialisasi
+    document.addEventListener('DOMContentLoaded', fetchData);
   </script>
 </body>
 </html>
