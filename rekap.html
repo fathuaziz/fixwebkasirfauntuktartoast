@@ -13,6 +13,7 @@
       --dark-color: #343a40;
       --success-color: #28a745;
       --danger-color: #dc3545;
+      --warning-color: #ff9800;
       --border-radius: 8px;
       --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
@@ -108,6 +109,16 @@
       transform: translateY(-2px);
     }
 
+    .btn-warning {
+      background-color: var(--warning-color);
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background-color: #e68a00;
+      transform: translateY(-2px);
+    }
+
     .loading {
       text-align: center;
       padding: 30px;
@@ -199,6 +210,78 @@
       font-size: 14px;
     }
 
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 10% auto;
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      width: 90%;
+      max-width: 400px;
+      animation: modalFadeIn 0.3s;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      color: var(--secondary-color);
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+    }
+
+    .error-message {
+      color: var(--danger-color);
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -210,6 +293,15 @@
       
       th, td {
         padding: 8px 10px;
+      }
+
+      .controls {
+        gap: 10px;
+      }
+
+      .btn {
+        padding: 8px 15px;
+        font-size: 14px;
       }
     }
   </style>
@@ -229,6 +321,9 @@
         <button class="btn btn-info" id="login-data-btn">
           Lihat Data Login
         </button>
+        <button class="btn btn-warning" id="kasir-btn">
+          Buka Kasir
+        </button>
       </div>
     </header>
 
@@ -246,10 +341,32 @@
     </footer>
   </div>
 
+  <!-- Modal untuk password kasir -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Akses Kasir</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="passwordInput">Masukkan Password:</label>
+          <input type="password" id="passwordInput" class="form-control" placeholder="Password kasir">
+          <div id="errorMsg" class="error-message">Password salah!</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelBtn" class="btn btn-outline">Batal</button>
+        <button id="confirmBtn" class="btn btn-primary">Masuk</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Konfigurasi
     const config = {
       apiUrl: "https://script.google.com/macros/s/AKfycbyGrWGIsbm1-sihqZVTtCefgC-Q3t3eWTAlCn_FvJx3zx8Jf-WuUDQmlPOamZb2KH7gpw/exec",
+      kasirUrl: "https://fathuaziz.github.io/fixwebkasirfauntuktartoast/indext.html",
+      correctPassword: "tartoast",
       itemsPerPage: 10,
       dateFormatOptions: { 
         year: 'numeric', 
@@ -266,7 +383,13 @@
       tableContent: document.getElementById('table-content'),
       refreshBtn: document.getElementById('refresh-btn'),
       exportBtn: document.getElementById('export-btn'),
-      loginDataBtn: document.getElementById('login-data-btn')
+      loginDataBtn: document.getElementById('login-data-btn'),
+      kasirBtn: document.getElementById('kasir-btn'),
+      passwordModal: document.getElementById('passwordModal'),
+      passwordInput: document.getElementById('passwordInput'),
+      errorMsg: document.getElementById('errorMsg'),
+      cancelBtn: document.getElementById('cancelBtn'),
+      confirmBtn: document.getElementById('confirmBtn')
     };
 
     // Format tanggal
@@ -424,6 +547,30 @@
       document.body.removeChild(link);
     }
 
+    // Fungsi untuk modal password
+    function showPasswordModal() {
+      domElements.passwordModal.style.display = 'block';
+      domElements.passwordInput.value = '';
+      domElements.errorMsg.style.display = 'none';
+      domElements.passwordInput.focus();
+    }
+
+    function hidePasswordModal() {
+      domElements.passwordModal.style.display = 'none';
+    }
+
+    function checkPassword() {
+      const password = domElements.passwordInput.value;
+      
+      if (password === config.correctPassword) {
+        window.open(config.kasirUrl, '_blank');
+        hidePasswordModal();
+      } else {
+        domElements.errorMsg.style.display = 'block';
+        domElements.passwordInput.focus();
+      }
+    }
+
     // Event Listeners
     domElements.refreshBtn.addEventListener('click', fetchData);
     domElements.exportBtn.addEventListener('click', async () => {
@@ -445,6 +592,25 @@
     // Tambahkan event listener untuk tombol login data
     domElements.loginDataBtn.addEventListener('click', () => {
       window.open('https://fathuaziz.github.io/fixwebkasirfauntuktartoast/pantau.login.html', '_blank');
+    });
+
+    // Event listener untuk tombol kasir dan modal
+    domElements.kasirBtn.addEventListener('click', showPasswordModal);
+    domElements.cancelBtn.addEventListener('click', hidePasswordModal);
+    domElements.confirmBtn.addEventListener('click', checkPassword);
+    
+    // Juga bisa tekan Enter di input password
+    domElements.passwordInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
+    });
+
+    // Klik di luar modal untuk menutup
+    window.addEventListener('click', (e) => {
+      if (e.target === domElements.passwordModal) {
+        hidePasswordModal();
+      }
     });
 
     // Inisialisasi
